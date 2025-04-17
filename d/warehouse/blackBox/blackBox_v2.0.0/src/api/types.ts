@@ -1,3 +1,4 @@
+// Create new file
 
 export interface Category {
   id: string;
