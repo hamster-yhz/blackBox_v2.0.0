@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary-color: #00A8FF;
+  --dark-color: #1A1A1A;
+}
+
+body {
+  @apply bg-gray-100 dark:bg-dark text-gray-900 dark:text-gray-100;
+}
+
+@layer components {
+  .prose {
+    @apply max-w-none;
+  }
+} 

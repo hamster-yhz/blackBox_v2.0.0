@@ -1,0 +1,44 @@
+:root {
+  /* 主题色 */
+  --primary-color: #00A8FF;
+  --primary-color-dark: #0077CC;
+  --primary-color-alpha: rgba(0, 168, 255, 0.1);
+
+  /* 背景色 */
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F8F9FA;
+  --bg-hover: #F0F2F5;
+
+  /* 文本颜色 */
+  --text-primary: #1A1A1A;
+  --text-secondary: #4A5568;
+  --text-tertiary: #718096;
+
+  /* 边框颜色 */
+  --border-color: #E2E8F0;
+
+  /* 代码块 */
+  --code-bg: #F7F7F7;
+  --code-block-bg: #282C34;
+
+  /* 引用块 */
+  --blockquote-bg: #F8F9FA;
+}
+
+/* 暗色主题 */
+:root.dark {
+  --bg-primary: #1A1A1A;
+  --bg-secondary: #2D2D2D;
+  --bg-hover: #363636;
+
+  --text-primary: #F3F4F6;
+  --text-secondary: #D1D5DB;
+  --text-tertiary: #9CA3AF;
+
+  --border-color: #404040;
+
+  --code-bg: #2D2D2D;
+  --code-block-bg: #1E1E1E;
+
+  --blockquote-bg: #2D2D2D;
+} 
