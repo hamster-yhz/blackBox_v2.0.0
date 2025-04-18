@@ -146,6 +146,7 @@ const handleLogout = () => {
 
   .mobile-menu-wrapper {
     display: block;
+    margin-left: auto;
   }
 
   .search-box {
@@ -154,6 +155,17 @@ const handleLogout = () => {
 
   .navbar-right {
     gap: 0.5rem;
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+  }
+
+  .navbar-container {
+    justify-content: space-between;
+  }
+
+  .navbar-left {
+    margin-right: auto;
   }
 }
 
