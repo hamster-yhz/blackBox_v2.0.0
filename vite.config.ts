@@ -40,16 +40,6 @@ export default defineConfig({
         entryFileNames: 'assets/[name]-[hash].js'
       }
     },
-    // 启用构建优化
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true
-      }
-    },
-    // 启用 gzip 压缩
-    reportCompressedSize: true,
     // 启用构建分析
     sourcemap: true
   }
