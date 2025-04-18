@@ -1,13 +1,14 @@
 import { marked } from 'marked'
+import { configureHighlight } from './highlight'
 import hljs from 'highlight.js'
-import 'highlight.js/styles/github-dark.css'
+import 'highlight.js/styles/atom-one-dark.css'
 
 export interface Article {
   id: string
   title: string
   date: string
   author?: string
-  category: string
+  categories: string[]
   tags: string[]
   readTime: string
   content: string
@@ -17,12 +18,7 @@ export interface Article {
 
 // 配置 marked
 marked.setOptions({
-  highlight: function(code, lang) {
-    if (lang && hljs.getLanguage(lang)) {
-      return hljs.highlight(code, { language: lang }).value
-    }
-    return hljs.highlightAuto(code).value
-  },
+  ...configureHighlight(),
   breaks: true,
   gfm: true
 })
@@ -113,16 +109,22 @@ export function parseMarkdown(content: string, id: string): Article {
     // 确保标题存在
     const title = data.title?.replace(/^["']|["']$/g, '') || '无标题'
     
+    // 处理 Markdown 内容，排除代码块中的标题
+    const processedContent = markdownContent.replace(/```[\s\S]*?```/g, (match) => {
+      // 将代码块中的 # 替换为特殊标记，避免被识别为标题
+      return match.replace(/#/g, '§')
+    })
+    
     return {
       id,
       title,
       date: dateStr,
       author: data.author,
-      category: data.category || '未分类',
+      categories: Array.isArray(data.categories) && data.categories.length > 0 ? data.categories : ['未分类'],
       tags: Array.isArray(data.tags) ? data.tags : [],
       readTime: data.readTime || `${Math.ceil(markdownContent.length / 500)} 分钟阅读`,
       content: markdownContent,
-      html: marked(markdownContent),
+      html: String(marked(processedContent)).replace(/§/g, '#'),
       summary: data.summary || summary
     }
   } catch (error) {
@@ -131,9 +133,9 @@ export function parseMarkdown(content: string, id: string): Article {
       id,
       title: '解析错误',
       date: new Date().toISOString(),
-      category: '未分类',
+      categories: ['未分类'],
       tags: [],
-      readTime: '1 分钟阅读',
+      readTime: '2 分钟阅读',
       content: '内容解析错误',
       html: '<p>内容解析错误</p>',
       summary: '内容解析错误'

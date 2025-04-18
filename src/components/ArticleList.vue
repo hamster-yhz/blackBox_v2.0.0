@@ -11,7 +11,7 @@
     </div>
     
     <template v-else>
-      <article v-for="article in articles" :key="article.id" class="article-card">
+      <article v-for="article in displayedArticles" :key="article.id" class="article-card">
         <div class="article-header">
           <router-link :to="`/article/${article.id}`" class="article-link">
             <h2 class="article-title">{{ article.title }}</h2>
@@ -19,11 +19,15 @@
           
           <div class="article-meta">
             <span class="article-date">{{ formatDate(article.date) }}</span>
-            <span class="article-category">{{ getCategoryName(article.category) }}</span>
+            <div class="article-categories">
+              <span v-for="category in article.categories" :key="category" class="category">
+                {{ category }}
+              </span>
+            </div>
             <span class="article-read-time">{{ article.readTime }}</span>
           </div>
           
-          <div class="article-tags" v-if="article.tags && article.tags.length">
+          <div class="article-tags" v-if="article.tags && article.tags.length > 0">
             <span v-for="tag in article.tags" :key="tag" class="tag">{{ tag }}</span>
           </div>
         </div>
@@ -41,12 +45,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useArticles } from '../composables/useArticles'
+
+const props = defineProps<{
+  limit?: number
+}>()
 
 const { articles, loadArticles } = useArticles()
 const isLoading = ref(true)
 const error = ref<string | null>(null)
+
+const displayedArticles = computed(() => {
+  if (!props.limit) return articles.value
+  return articles.value.slice(0, props.limit)
+})
 
 function getCategoryName(id: string): string {
   const categoryNames: Record<string, string> = {
@@ -75,7 +88,8 @@ onMounted(async () => {
   try {
     await loadArticles()
   } catch (e) {
-    error.value = '加载文章失败，请稍后重试'
+    error.value = '加载文章失败'
+    console.error(e)
   } finally {
     isLoading.value = false
   }
@@ -182,8 +196,24 @@ onMounted(async () => {
   content: '📅';
 }
 
-.article-category::before {
+.article-categories {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.category {
+  background: var(--primary-color-light);
+  color: var(--primary-color);
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.category::before {
   content: '📁';
+  margin-right: 0.25rem;
 }
 
 .article-read-time::before {

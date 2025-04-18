@@ -35,7 +35,7 @@
     </header>
 
     <main class="main-content">
-      <ArticleList />
+      <ArticleList :limit="3" />
     </main>
   </div>
 </template>

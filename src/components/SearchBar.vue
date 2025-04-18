@@ -14,6 +14,11 @@
           <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
         </svg>
       </div>
+      <div class="shortcut-hint">
+        <span class="shortcut-key">Ctrl</span>
+        <span>+</span>
+        <span class="shortcut-key">K</span>
+      </div>
     </div>
 
     <div v-if="showResults && searchQuery" class="search-results" v-click-outside="hideResults">
@@ -62,7 +67,7 @@ const loading = ref(false)
 const error = ref<string | null>(null)
 const results = ref<any[]>([])
 
-const { articles, fetchArticles } = useArticles()
+const { articles, loadArticles } = useArticles()
 
 // Fuse.js 配置
 const fuseOptions = {
@@ -78,7 +83,7 @@ async function initFuse() {
   try {
     loading.value = true
     error.value = null
-    await fetchArticles()
+    await loadArticles()
     fuse = new Fuse(articles.value, fuseOptions)
   } catch (e) {
     error.value = '加载搜索数据失败'
@@ -121,28 +126,68 @@ initFuse()
 .search-container {
   position: relative;
   width: 100%;
-  max-width: 600px;
+  max-width: 800px;
   margin: 0 auto;
 }
 
 .search-input-wrapper {
   position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
 }
 
 .search-input {
   width: 100%;
-  padding: 0.75rem 1rem 0.75rem 2.5rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  font-size: 1rem;
-  background-color: white;
-  transition: all 0.2s;
+  min-width: 300px;
+  max-width: 800px;
+  height: 40px;
+  padding: 0.5rem 7rem 0.5rem 2.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+
+  &::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.8;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px var(--primary-color-light);
+  }
+
+  @media (max-width: 640px) {
+    min-width: 200px;
+    padding-right: 6rem;
+  }
 }
 
-.search-input:focus {
-  outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(0, 168, 255, 0.1);
+.shortcut-hint {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  color: var(--text-secondary);
+  opacity: 0.6;
+  pointer-events: none;
+  font-size: 0.75rem;
+  background-color: var(--bg-secondary);
+}
+
+.shortcut-key {
+  padding: 0.125rem 0.375rem;
+  background-color: var(--bg-tertiary);
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
 }
 
 .search-icon {
@@ -150,7 +195,26 @@ initFuse()
   left: 0.75rem;
   top: 50%;
   transform: translateY(-50%);
-  color: #94a3b8;
+  color: var(--text-secondary);
+  opacity: 0.8;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.clear-icon {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  opacity: 0.8;
+  cursor: pointer;
+  
+  &:hover {
+    opacity: 1;
+  }
 }
 
 .search-results {
@@ -206,6 +270,7 @@ initFuse()
   margin-bottom: 0.5rem;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -234,6 +299,19 @@ initFuse()
     left: 1rem;
     right: 1rem;
     max-height: calc(100vh - 5rem);
+  }
+
+  .search-input {
+    min-width: 200px;
+    padding-right: 4rem;
+  }
+  
+  .shortcut-hint {
+    font-size: 0.7rem;
+  }
+  
+  .shortcut-key {
+    padding: 0.125rem 0.25rem;
   }
 }
 </style> 

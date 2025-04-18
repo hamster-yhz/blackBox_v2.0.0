@@ -24,6 +24,7 @@
         <SearchBox class="mobile-search" />
         <router-link to="/" @click="closeMenu">首页</router-link>
         <router-link to="/categories" @click="closeMenu">分类</router-link>
+        <router-link to="/archive" @click="closeMenu">归档</router-link>
         <router-link to="/about" @click="closeMenu">关于</router-link>
         
         <template v-if="!isAuthenticated">

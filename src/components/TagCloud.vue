@@ -27,8 +27,9 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { getTags, type Tag } from '../api/tags'
+import { Tag, useTags } from '../api/tags'
 
+const { getTags } = useTags()
 const tags = ref<Tag[]>([])
 const loading = ref(true)
 const error = ref<string | null>(null)

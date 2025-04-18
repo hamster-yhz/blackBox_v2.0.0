@@ -33,6 +33,40 @@
         />
       </nav>
     </div>
+
+    <!-- 添加移动端悬浮按钮和弹出层 -->
+    <Teleport to="body">
+      <div v-if="isMobileView && showFloatingButton" class="floating-toc-button" @click="showMobileToc = true">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </div>
+
+      <div v-if="showMobileToc" class="mobile-toc-modal" @click.self="showMobileToc = false">
+        <div class="mobile-toc-content">
+          <div class="mobile-toc-header">
+            <h3>目录</h3>
+            <button class="close-button" @click="showMobileToc = false">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+          <nav class="toc">
+            <TocItem
+              v-for="item in tocItems"
+              :key="item.id"
+              :item="item"
+              :active-heading="activeHeading"
+              @click="handleMobileTocClick"
+            />
+          </nav>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -42,48 +76,13 @@ import { useRoute } from 'vue-router'
 import { getArticleById } from '../api/articles'
 import type { Article } from '../utils/markdown'
 import { useTheme } from '../composables/useTheme'
-import 'highlight.js/styles/github-dark.css'
 import { Marked } from 'marked'
-import hljs from 'highlight.js/lib/core'
+import { configureHighlight, applyHighlight } from '../utils/highlight'
 import TocItem from '../components/TocItem.vue'
-
-// Import commonly used languages
-import javascript from 'highlight.js/lib/languages/javascript'
-import typescript from 'highlight.js/lib/languages/typescript'
-import python from 'highlight.js/lib/languages/python'
-import java from 'highlight.js/lib/languages/java'
-import cpp from 'highlight.js/lib/languages/cpp'
-import css from 'highlight.js/lib/languages/css'
-import xml from 'highlight.js/lib/languages/xml'
-import json from 'highlight.js/lib/languages/json'
-import bash from 'highlight.js/lib/languages/bash'
-import markdown from 'highlight.js/lib/languages/markdown'
-
-// Register languages
-hljs.registerLanguage('javascript', javascript)
-hljs.registerLanguage('typescript', typescript)
-hljs.registerLanguage('python', python)
-hljs.registerLanguage('java', java)
-hljs.registerLanguage('cpp', cpp)
-hljs.registerLanguage('css', css)
-hljs.registerLanguage('xml', xml)
-hljs.registerLanguage('json', json)
-hljs.registerLanguage('bash', bash)
-hljs.registerLanguage('markdown', markdown)
 
 // Configure marked
 const marked = new Marked({
-  highlight(code, lang) {
-    if (lang && hljs.getLanguage(lang)) {
-      try {
-        return hljs.highlight(code, { language: lang }).value
-      } catch (e) {
-        console.error('Failed to highlight code block:', e)
-        return code
-      }
-    }
-    return code
-  },
+  ...configureHighlight(),
   breaks: true,
   gfm: true
 })
@@ -97,6 +96,13 @@ const activeHeading = ref('')
 const { isDark } = useTheme()
 const contentRef = ref<HTMLElement | null>(null)
 
+// 移动端状态管理
+const showFloatingButton = ref(false)
+const showMobileToc = ref(false)
+const lastScrollTop = ref(0)
+const windowWidth = ref(window.innerWidth)
+const isMobileView = computed(() => windowWidth.value <= 768)
+
 interface TocItem {
   id: string
   text: string
@@ -106,10 +112,14 @@ interface TocItem {
 
 const processContent = (content: string): { html: string, toc: TocItem[] } => {
   const items: TocItem[] = []
-  let processedContent = content
-
+  
+  // 先处理代码块，将代码块中的 # 替换为特殊标记
+  let processedContent = content.replace(/```[\s\S]*?```/g, (match) => {
+    return match.replace(/#/g, '§')
+  })
+  
   // 处理标题并生成目录项
-  processedContent = content.replace(/^(#{1,6})\s+(.+)$/gm, (match, hashes, title) => {
+  processedContent = processedContent.replace(/^(#{1,6})\s+(.+)$/gm, (match, hashes, title) => {
     const level = hashes.length
     const text = title.trim()
     // 生成一个更可靠的唯一ID
@@ -118,7 +128,10 @@ const processContent = (content: string): { html: string, toc: TocItem[] } => {
     items.push({ id, text, level, children: [] })
     return `<h${level} id="${id}">${text}</h${level}>`
   })
-
+  
+  // 恢复代码块中的 # 符号
+  processedContent = processedContent.replace(/§/g, '#')
+  
   // 使用 marked 处理 Markdown
   const html = marked.parse(processedContent)
 
@@ -152,6 +165,14 @@ const content = computed(() => {
   if (!article.value?.content) return ''
   const result = processContent(article.value.content)
   tocItems.value = result.toc
+  
+  // 在下一个 tick 应用代码高亮
+  nextTick(() => {
+    if (contentRef.value) {
+      applyHighlight(contentRef.value)
+    }
+  })
+  
   return result.html
 })
 
@@ -207,10 +228,11 @@ function scrollToHeading(id: string) {
   // 获取目标元素的位置
   const elementRect = element.getBoundingClientRect()
   const absoluteElementTop = elementRect.top + window.pageYOffset
-  const middle = 150 // 距离顶部的固定距离
+  const headerHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-height')) || 64
+  const offset = 24 // 额外的偏移量，让标题和导航栏之间有一定间距
 
-  // 计算需要滚动的位置
-  const scrollTo = absoluteElementTop - middle
+  // 计算需要滚动的位置，考虑导航栏高度
+  const scrollTo = absoluteElementTop - headerHeight - offset
 
   // 平滑滚动到目标位置
   window.scrollTo({
@@ -228,6 +250,34 @@ function handleTocClick(event: MouseEvent, id: string) {
   event.preventDefault()
   activeHeading.value = id // 立即更新高亮状态
   scrollToHeading(id)
+}
+
+// 处理移动端目录点击
+function handleMobileTocClick(event: MouseEvent, id: string) {
+  handleTocClick(event, id)
+  showMobileToc.value = false
+}
+
+// 监听滚动以显示/隐藏悬浮按钮
+function handleScroll() {
+  if (!isMobileView.value) return
+
+  const currentScrollTop = window.scrollY
+  const scrollingDown = currentScrollTop > lastScrollTop.value
+  const scrollThreshold = 100 // 滚动多少距离后显示按钮
+
+  if (scrollingDown && currentScrollTop > scrollThreshold) {
+    showFloatingButton.value = true
+  } else if (!scrollingDown && currentScrollTop < scrollThreshold) {
+    showFloatingButton.value = false
+  }
+
+  lastScrollTop.value = currentScrollTop
+}
+
+// 监听窗口大小变化
+function handleResize() {
+  windowWidth.value = window.innerWidth
 }
 
 // 格式化日期
@@ -249,6 +299,16 @@ function getCategoryName(id: string): string {
   }
   return categoryNames[id] || id
 }
+
+// 创建一个清理函数
+let cleanup: (() => void) | null = null
+
+// 注册清理函数
+onUnmounted(() => {
+  if (cleanup) {
+    cleanup()
+  }
+})
 
 onMounted(async () => {
   try {
@@ -282,12 +342,16 @@ onMounted(async () => {
       }
 
       window.addEventListener('scroll', scrollHandler, { passive: true })
+      window.addEventListener('scroll', handleScroll, { passive: true })
+      window.addEventListener('resize', handleResize)
       
       // 保存清理函数
-      onUnmounted(() => {
+      cleanup = () => {
         observer.disconnect()
         window.removeEventListener('scroll', scrollHandler)
-      })
+        window.removeEventListener('scroll', handleScroll)
+        window.removeEventListener('resize', handleResize)
+      }
 
       // 处理初始 hash
       const hash = window.location.hash.slice(1)
@@ -307,6 +371,117 @@ onMounted(async () => {
   }
 })
 </script>
+
+<style>
+/* 确保这些样式不被 scoped 限制 */
+.markdown-body pre {
+  margin: 1rem 0;
+  padding: 1rem;
+  border-radius: 8px;
+  background: var(--code-block-bg);
+  overflow-x: auto;
+}
+
+.markdown-body pre code {
+  background: none;
+  padding: 0;
+  border-radius: 0;
+  font-family: 'Fira Code', Consolas, Monaco, 'Andale Mono', monospace;
+  font-size: 0.9em;
+  line-height: 1.5;
+  color: var(--code-text);
+}
+
+.markdown-body code {
+  background: var(--code-inline-bg);
+  color: var(--code-text);
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  font-size: 0.9em;
+  font-family: 'Fira Code', Consolas, Monaco, 'Andale Mono', monospace;
+}
+
+/* Light theme */
+:root {
+  --code-block-bg: #f8f9fc;
+  --code-inline-bg: #f3f4f6;
+  --code-text: #1a1a1a;
+  --header-height: 64px;
+}
+
+/* Dark theme */
+.dark {
+  --code-block-bg: #1e1e1e;
+  --code-inline-bg: #2d2d2d;
+  --code-text: #e5e7eb;
+}
+
+/* 代码高亮主题相关颜色 */
+.hljs {
+  background: transparent !important;
+  color: inherit !important;
+}
+
+/* Light theme syntax colors - 增强对比度 */
+:root {
+  --syntax-comment: #608b4e;
+  --syntax-keyword: #af00db;
+  --syntax-string: #0550ae;
+  --syntax-number: #098658;
+  --syntax-function: #795e26;
+  --syntax-class: #267f99;
+  --syntax-title: #800080;
+  --syntax-params: #1a1a1a;
+  --syntax-variable: #e65100;
+  --syntax-operator: #0033b3;
+  --syntax-property: #660e7a;
+  --syntax-punctuation: #1a1a1a;
+}
+
+/* Dark theme syntax colors */
+.dark {
+  --syntax-comment: #6a737d;
+  --syntax-keyword: #ff7b72;
+  --syntax-string: #a5d6ff;
+  --syntax-number: #79c0ff;
+  --syntax-function: #d2a8ff;
+  --syntax-class: #7ee787;
+  --syntax-title: #d2a8ff;
+  --syntax-params: #e5e7eb;
+  --syntax-variable: #ffa657;
+  --syntax-operator: #79c0ff;
+  --syntax-property: #79c0ff;
+  --syntax-punctuation: #e5e7eb;
+}
+
+/* 语法高亮规则 */
+.hljs-keyword { color: var(--syntax-keyword) !important; }
+.hljs-string { color: var(--syntax-string) !important; }
+.hljs-number { color: var(--syntax-number) !important; }
+.hljs-function { color: var(--syntax-function) !important; }
+.hljs-class { color: var(--syntax-class) !important; }
+.hljs-title { color: var(--syntax-title) !important; }
+.hljs-params { color: var(--syntax-params) !important; }
+.hljs-variable { color: var(--syntax-variable) !important; }
+.hljs-comment { color: var(--syntax-comment) !important; }
+.hljs-operator { color: var(--syntax-operator) !important; }
+.hljs-property { color: var(--syntax-property) !important; }
+.hljs-punctuation { color: var(--syntax-punctuation) !important; }
+
+/* 特殊处理一些语言特定的语法 */
+.hljs-attr { color: var(--syntax-property) !important; }
+.hljs-built_in { color: var(--syntax-keyword) !important; }
+.hljs-literal { color: var(--syntax-keyword) !important; }
+.hljs-type { color: var(--syntax-class) !important; }
+.hljs-meta { color: var(--syntax-keyword) !important; }
+.hljs-selector-tag { color: var(--syntax-keyword) !important; }
+.hljs-selector-class { color: var(--syntax-class) !important; }
+.hljs-selector-id { color: var(--syntax-class) !important; }
+.hljs-selector-attr { color: var(--syntax-variable) !important; }
+.hljs-selector-pseudo { color: var(--syntax-variable) !important; }
+.hljs-template-tag { color: var(--syntax-keyword) !important; }
+.hljs-template-variable { color: var(--syntax-variable) !important; }
+</style>
 
 <style scoped>
 .article-container {
@@ -444,10 +619,7 @@ onMounted(async () => {
   }
 
   .toc-container {
-    position: relative;
-    top: 0;
-    width: 100%;
-    margin-bottom: 2rem;
+    display: none;  /* 在移动端完全隐藏原始目录 */
   }
 
   .article-title {
@@ -471,36 +643,11 @@ onMounted(async () => {
   margin-bottom: 1rem;
   font-weight: 600;
   color: var(--text-primary);
-  scroll-margin-top: 80px; /* 添加滚动边距 */
+  scroll-margin-top: calc(var(--header-height) + 24px);
 }
 
 :deep(.markdown-body p) {
   margin-bottom: 1rem;
-}
-
-:deep(.markdown-body code) {
-  background: var(--code-bg);
-  padding: 0.2em 0.4em;
-  border-radius: 3px;
-  font-size: 0.9em;
-  font-family: 'Fira Code', Consolas, Monaco, 'Andale Mono', monospace;
-}
-
-:deep(.markdown-body pre) {
-  margin: 1rem 0;
-  padding: 1rem;
-  border-radius: 8px;
-  background: var(--code-block-bg) !important;
-  overflow-x: auto;
-}
-
-:deep(.markdown-body pre code) {
-  background: none;
-  padding: 0;
-  font-family: 'Fira Code', Consolas, Monaco, 'Andale Mono', monospace;
-  font-size: 0.9em;
-  line-height: 1.5;
-  -webkit-font-smoothing: auto;
 }
 
 :deep(.markdown-body img) {
@@ -530,42 +677,330 @@ onMounted(async () => {
   color: #f3f4f6;
 }
 
+/* 代码高亮主题相关颜色 */
 :deep(.hljs) {
   background: transparent !important;
   padding: 0 !important;
   color: inherit;
 }
 
-/* 代码高亮主题相关颜色 */
+:deep(.hljs-keyword),
+:deep(.hljs-selector-tag),
+:deep(.hljs-title),
+:deep(.hljs-section) {
+  color: #c678dd;
+}
+
+:deep(.hljs-string),
+:deep(.hljs-selector-attr),
+:deep(.hljs-selector-pseudo),
+:deep(.hljs-regexp) {
+  color: #98c379;
+}
+
+:deep(.hljs-literal),
+:deep(.hljs-number) {
+  color: #d19a66;
+}
+
+:deep(.hljs-variable),
+:deep(.hljs-template-variable) {
+  color: #e06c75;
+}
+
+:deep(.hljs-comment) {
+  color: #7f848e;
+}
+
+:deep(.hljs-doctag) {
+  color: #c678dd;
+}
+
+:deep(.hljs-function) {
+  color: #61afef;
+}
+
+:deep(.hljs-params) {
+  color: #e5c07b;
+}
+
+:deep(.hljs-built_in) {
+  color: #e5c07b;
+}
+
+:deep(.hljs-class) {
+  color: #e5c07b;
+}
+
+:deep(.hljs-property) {
+  color: #e06c75;
+}
+
+:deep(.hljs-attr) {
+  color: #d19a66;
+}
+
+:deep(.hljs-meta) {
+  color: #7f848e;
+}
+
+:deep(.hljs-tag) {
+  color: #e06c75;
+}
+
+:deep(.hljs-name) {
+  color: #61afef;
+}
+
+:deep(.hljs-type) {
+  color: #e5c07b;
+}
+
+:deep(.hljs-link) {
+  color: #61afef;
+  text-decoration: underline;
+}
+
+:deep(.hljs-emphasis) {
+  font-style: italic;
+}
+
+:deep(.hljs-strong) {
+  font-weight: bold;
+}
+
+:deep(.hljs-deletion) {
+  color: #be5046;
+}
+
+:deep(.hljs-addition) {
+  color: #98c379;
+}
+
+/* 暗色主题代码高亮 */
+.dark :deep(.hljs) {
+  color: #abb2bf;
+}
+
 .dark :deep(.hljs-keyword),
 .dark :deep(.hljs-selector-tag),
 .dark :deep(.hljs-title),
 .dark :deep(.hljs-section) {
-  color: #cc99cd;
+  color: #c678dd;
 }
 
 .dark :deep(.hljs-string),
 .dark :deep(.hljs-selector-attr),
 .dark :deep(.hljs-selector-pseudo),
 .dark :deep(.hljs-regexp) {
-  color: #7ec699;
+  color: #98c379;
 }
 
 .dark :deep(.hljs-literal),
 .dark :deep(.hljs-number) {
-  color: #f08d49;
+  color: #d19a66;
 }
 
 .dark :deep(.hljs-variable),
 .dark :deep(.hljs-template-variable) {
-  color: #7ec699;
+  color: #e06c75;
 }
 
 .dark :deep(.hljs-comment) {
-  color: #999;
+  color: #7f848e;
 }
 
 .dark :deep(.hljs-doctag) {
-  color: #cc99cd;
+  color: #c678dd;
+}
+
+.dark :deep(.hljs-function) {
+  color: #61afef;
+}
+
+.dark :deep(.hljs-params) {
+  color: #e5c07b;
+}
+
+.dark :deep(.hljs-built_in) {
+  color: #e5c07b;
+}
+
+.dark :deep(.hljs-class) {
+  color: #e5c07b;
+}
+
+.dark :deep(.hljs-property) {
+  color: #e06c75;
+}
+
+.dark :deep(.hljs-attr) {
+  color: #d19a66;
+}
+
+.dark :deep(.hljs-meta) {
+  color: #7f848e;
+}
+
+.dark :deep(.hljs-tag) {
+  color: #e06c75;
+}
+
+.dark :deep(.hljs-name) {
+  color: #61afef;
+}
+
+.dark :deep(.hljs-type) {
+  color: #e5c07b;
+}
+
+.dark :deep(.hljs-link) {
+  color: #61afef;
+  text-decoration: underline;
+}
+
+.dark :deep(.hljs-emphasis) {
+  font-style: italic;
+}
+
+.dark :deep(.hljs-strong) {
+  font-weight: bold;
+}
+
+.dark :deep(.hljs-deletion) {
+  color: #be5046;
+}
+
+.dark :deep(.hljs-addition) {
+  color: #98c379;
+}
+</style>
+
+<style scoped>
+.floating-toc-button {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: var(--primary-color);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease;
+  z-index: 100;
+  opacity: 0.9;  /* 稍微降低不透明度 */
+}
+
+.floating-toc-button:hover {
+  transform: scale(1.05);
+}
+
+.mobile-toc-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-start;  /* 改为顶部对齐 */
+  justify-content: center;
+  z-index: 1000;
+  padding-top: 2rem;  /* 添加顶部间距 */
+}
+
+.mobile-toc-content {
+  background-color: var(--bg-primary);
+  width: 90%;
+  max-width: 400px;
+  max-height: 80vh;
+  border-radius: 12px;
+  padding: 1rem;
+  overflow-y: auto;
+  margin-top: var(--header-height);  /* 考虑顶部导航栏的高度 */
+}
+
+.mobile-toc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.mobile-toc-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--text-primary);
+}
+
+.close-button {
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-button:hover {
+  color: var(--text-primary);
+}
+
+@media (max-width: 768px) {
+  .toc-container:not(.mobile-toc) {
+    display: none;
+  }
+}
+
+/* 确保移动端目录样式正确 */
+.mobile-toc-content .toc {
+  padding: 0 0.5rem;
+}
+
+.mobile-toc-content .toc-item {
+  padding: 0.5rem 0;
+  font-size: 1rem;
+}
+
+/* 添加动画效果 */
+.floating-toc-button {
+  animation: fadeIn 0.3s ease;
+}
+
+.mobile-toc-modal {
+  animation: fadeIn 0.2s ease;
+}
+
+.mobile-toc-content {
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 </style> 

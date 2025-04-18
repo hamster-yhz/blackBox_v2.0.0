@@ -21,23 +21,33 @@ export interface CategoryDetail {
 // 获取所有分类
 export async function getCategories(): Promise<Category[]> {
   const articles = await getArticles()
-  const categoryMap = new Map<string, number>()
+  const categoryMap = new Map<string, { count: number, name: string }>()
   
   articles.forEach(article => {
-    categoryMap.set(article.category, (categoryMap.get(article.category) || 0) + 1)
+    if (article.categories && Array.isArray(article.categories)) {
+      article.categories.forEach(category => {
+        const existing = categoryMap.get(category) || { count: 0, name: category }
+        categoryMap.set(category, {
+          count: existing.count + 1,
+          name: existing.name
+        })
+      })
+    }
   })
   
-  return Array.from(categoryMap.entries()).map(([id, count]) => ({
+  return Array.from(categoryMap.entries()).map(([id, data]) => ({
     id,
-    name: getCategoryName(id),
-    count
+    name: data.name,
+    count: data.count
   }))
 }
 
 // 获取分类详情
 export async function getCategoryById(id: string): Promise<CategoryDetail> {
   const articles = await getArticles()
-  const categoryArticles = articles.filter(article => article.category === id)
+  const categoryArticles = articles.filter(article => 
+    article.categories && Array.isArray(article.categories) && article.categories.includes(id)
+  )
   
   if (categoryArticles.length === 0) {
     throw new Error(`Category not found: ${id}`)
@@ -45,7 +55,7 @@ export async function getCategoryById(id: string): Promise<CategoryDetail> {
   
   return {
     id,
-    name: getCategoryName(id),
+    name: id,
     articles: categoryArticles.map(article => ({
       id: article.id,
       title: article.title,

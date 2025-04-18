@@ -28,7 +28,7 @@
               <span>{{ article.readTime }}</span>
             </div>
             <p class="text-gray-600 dark:text-gray-300">{{ extractSummary(article.content) }}</p>
-            <div class="mt-4 flex flex-wrap gap-2">
+            <div class="mt-4 flex flex-wrap gap-2" v-if="article.tags && article.tags.length > 0">
               <span 
                 v-for="tag in article.tags" 
                 :key="tag" 
@@ -60,7 +60,9 @@ const error = ref<string | null>(null)
 onMounted(async () => {
   try {
     const allArticles = await getArticles()
-    articles.value = allArticles.filter(article => article.category === categoryId.value)
+    articles.value = allArticles.filter(article => 
+      article.categories && Array.isArray(article.categories) && article.categories.includes(categoryId.value)
+    )
   } catch (e) {
     error.value = '加载文章失败'
     console.error(e)
@@ -71,13 +73,7 @@ onMounted(async () => {
 
 // 获取分类的中文名称
 function getCategoryName(id: string): string {
-  const categoryNames: Record<string, string> = {
-    'frontend': '前端开发',
-    'backend': '后端开发',
-    'devops': 'DevOps',
-    'algorithm': '算法'
-  }
-  return categoryNames[id] || id
+  return id
 }
 </script>
 

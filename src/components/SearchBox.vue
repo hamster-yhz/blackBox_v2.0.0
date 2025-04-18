@@ -122,24 +122,32 @@ onUnmounted(() => {
 <style scoped>
 .search-container {
   position: relative;
-  width: 100%;
-  max-width: 600px;
+  width: 280px;  /* 设置固定宽度 */
+  min-width: 280px;  /* 确保最小宽度 */
 }
 
 .search-input-wrapper {
   position: relative;
   width: 100%;
+  display: flex;
+  align-items: center;
 }
 
 .search-input {
   width: 100%;
-  padding: 0.5rem 2.5rem 0.5rem 1rem;
+  height: 36px;  /* 固定高度 */
+  padding: 0 2.5rem 0 2rem;  /* 调整内边距 */
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: 6px;
   background: var(--bg-secondary);
   color: var(--text-primary);
-  font-size: 0.9rem;
-  transition: all 0.2s;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+}
+
+.search-input::placeholder {
+  color: var(--text-tertiary);
+  opacity: 0.8;
 }
 
 .search-input:focus {
@@ -150,30 +158,65 @@ onUnmounted(() => {
 
 .search-icon {
   position: absolute;
-  right: 0.75rem;
+  left: 0.625rem;  /* 10px */
   top: 50%;
   transform: translateY(-50%);
   color: var(--text-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
+  opacity: 0.7;
 }
 
+.search-shortcut {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--text-tertiary);
+  font-size: 0.75rem;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.search-container:not(.is-active) .search-shortcut {
+  opacity: 0.7;
+}
+
+kbd {
+  min-width: 16px;
+  height: 16px;
+  padding: 0 0.25rem;
+  border-radius: 3px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  font-size: 0.75rem;
+  font-family: system-ui, -apple-system, sans-serif;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+/* 搜索结果样式优化 */
 .search-results {
   position: absolute;
-  top: 100%;
+  top: calc(100% + 0.5rem);
   left: 0;
   width: 100%;
+  min-width: 280px;  /* 与搜索框同宽 */
   background: var(--bg-primary);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: 6px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   max-height: 400px;
   overflow-y: auto;
   z-index: 1000;
-  margin-top: 0.5rem;
 }
 
 .search-result-item {
@@ -211,35 +254,6 @@ onUnmounted(() => {
   font-size: 0.8rem;
 }
 
-.search-shortcut {
-  position: absolute;
-  top: 50%;
-  right: 2.5rem;
-  transform: translateY(-50%);
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  color: var(--text-tertiary);
-  font-size: 0.8rem;
-  pointer-events: none;
-  white-space: nowrap;
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-
-.search-container:not(.is-active) .search-shortcut {
-  opacity: 1;
-}
-
-kbd {
-  padding: 0.1rem 0.4rem;
-  border-radius: 4px;
-  background: var(--bg-hover);
-  border: 1px solid var(--border-color);
-  font-size: 0.8rem;
-  font-family: monospace;
-}
-
 /* 动画效果 */
 .fade-enter-active,
 .fade-leave-active {
@@ -251,20 +265,18 @@ kbd {
   opacity: 0;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 640px) {
+  .search-container {
+    width: 100%;  /* 在非常窄的屏幕上占满宽度 */
+    min-width: 0;
+  }
+
   .search-shortcut {
-    display: none;
+    display: none;  /* 在超窄屏幕上隐藏快捷键提示 */
   }
 
   .search-input {
-    padding-right: 2rem;
-  }
-
-  .search-results {
-    position: absolute;
-    width: 100%;
-    left: 0;
-    margin-top: 0.5rem;
+    padding-right: 1rem;  /* 减少右侧内边距 */
   }
 }
 </style> 

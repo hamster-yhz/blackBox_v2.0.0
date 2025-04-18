@@ -11,6 +11,7 @@
       <nav class="desktop-nav">
         <router-link to="/">首页</router-link>
         <router-link to="/categories">分类</router-link>
+        <router-link to="/archive">归档</router-link>
         <router-link to="/about">关于</router-link>
       </nav>
 
@@ -95,7 +96,7 @@ const handleLogout = () => {
   padding: 0 1rem;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 0.5rem;
 }
 
 .navbar-left {
@@ -108,11 +109,13 @@ const handleLogout = () => {
   font-weight: 600;
   color: var(--text-primary);
   text-decoration: none;
+  margin-right: 2rem;
 }
 
 .desktop-nav {
   display: flex;
-  gap: 1.5rem;
+  gap: 2rem;
+  margin-right: auto;
 }
 
 .desktop-nav a {
@@ -120,6 +123,7 @@ const handleLogout = () => {
   text-decoration: none;
   font-weight: 500;
   transition: color 0.2s;
+  font-size: 0.95rem;
 }
 
 .desktop-nav a:hover {
@@ -130,6 +134,7 @@ const handleLogout = () => {
   display: flex;
   align-items: center;
   gap: 1rem;
+  margin-left: 1rem;
 }
 
 .search-box {
