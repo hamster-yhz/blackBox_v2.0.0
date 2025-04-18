@@ -70,18 +70,29 @@ const searchQuery = ref('')
 const isActive = ref(false)
 const searchResults = ref<Array<FuseResult<Article> & { score: number }>>([])
 
-const { articles } = useArticles()
+const { articles, loadArticles } = useArticles()
 
 // 配置 Fuse.js
-const fuse = new Fuse(articles.value, {
-  keys: ['title', 'summary', 'content'],
-  threshold: 0.3,
-  distance: 100,
-  minMatchCharLength: 2
-})
+let fuse: Fuse<Article>
+
+// 初始化 Fuse 实例
+async function initFuse() {
+  if (articles.value.length === 0) {
+    await loadArticles()
+  }
+  fuse = new Fuse(articles.value, {
+    keys: ['title', 'summary', 'content'],
+    threshold: 0.3,
+    distance: 100,
+    minMatchCharLength: 2
+  })
+}
 
 // 监听搜索输入
-watch(searchQuery, (newQuery) => {
+watch(searchQuery, async (newQuery) => {
+  if (!fuse) {
+    await initFuse()
+  }
   if (newQuery.trim()) {
     searchResults.value = fuse.search(newQuery).slice(0, 5).map(result => ({
       ...result,
@@ -95,6 +106,7 @@ watch(searchQuery, (newQuery) => {
 // 激活搜索
 function activate() {
   isActive.value = true
+  searchInput.value?.focus()
 }
 
 // 取消激活
@@ -110,13 +122,13 @@ function handleShortcut(event: KeyboardEvent) {
   if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
     event.preventDefault()
     activate()
-    searchInput.value?.focus()
   }
 }
 
 // 监听快捷键
 onMounted(() => {
   window.addEventListener('keydown', handleShortcut)
+  initFuse()
 })
 
 onUnmounted(() => {

@@ -56,7 +56,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import Fuse from 'fuse.js'
 import { useArticles } from '../composables/useArticles'
 import { vClickOutside } from '../directives/clickOutside'
@@ -83,7 +83,9 @@ async function initFuse() {
   try {
     loading.value = true
     error.value = null
-    await loadArticles()
+    if (articles.value.length === 0) {
+      await loadArticles()
+    }
     fuse = new Fuse(articles.value, fuseOptions)
   } catch (e) {
     error.value = '加载搜索数据失败'
@@ -94,14 +96,13 @@ async function initFuse() {
 }
 
 // 监听搜索输入
-watch(searchQuery, (newQuery) => {
+watch(searchQuery, async (newQuery) => {
   if (!newQuery) {
     results.value = []
     return
   }
   if (!fuse) {
-    initFuse()
-    return
+    await initFuse()
   }
   results.value = fuse.search(newQuery)
 })
@@ -119,7 +120,9 @@ function formatDate(dateString: string): string {
 }
 
 // 初始化
-initFuse()
+onMounted(() => {
+  initFuse()
+})
 </script>
 
 <style scoped>

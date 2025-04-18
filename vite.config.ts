@@ -25,13 +25,32 @@ export default defineConfig({
         main: resolve(__dirname, 'index.html')
       },
       output: {
+        manualChunks: {
+          'vendor': ['vue', 'vue-router'],
+          'utils': ['@vueuse/core', 'fuse.js'],
+          'markdown': ['marked', 'highlight.js', 'gray-matter']
+        },
         assetFileNames: (assetInfo) => {
           if (assetInfo.name?.endsWith('.md')) {
             return 'content/articles/[name][extname]'
           }
           return 'assets/[name]-[hash][extname]'
-        }
+        },
+        chunkFileNames: 'assets/[name]-[hash].js',
+        entryFileNames: 'assets/[name]-[hash].js'
       }
-    }
+    },
+    // 启用构建优化
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true
+      }
+    },
+    // 启用 gzip 压缩
+    reportCompressedSize: true,
+    // 启用构建分析
+    sourcemap: true
   }
 }) 

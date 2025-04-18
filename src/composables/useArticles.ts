@@ -58,6 +58,11 @@ export function useArticles() {
     }
   }
 
+  // 确保文章数据已加载
+  if (articles.value.length === 0) {
+    loadArticles()
+  }
+
   return {
     articles,
     isLoading,
