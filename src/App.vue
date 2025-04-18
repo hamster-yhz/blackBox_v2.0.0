@@ -1,6 +1,6 @@
 <template>
-  <div class="app" :class="{ 'dark': isDark }">
-    <NavBar />
+  <div class="min-h-screen bg-gray-50">
+    <Navbar />
     <router-view />
   </div>
 </template>
@@ -8,7 +8,7 @@
 <script setup lang="ts">
 import { onMounted, watch } from 'vue'
 import { useTheme } from './composables/useTheme'
-import NavBar from './components/NavBar.vue'
+import Navbar from './components/Navbar.vue'
 
 const { isDark, initTheme } = useTheme()
 

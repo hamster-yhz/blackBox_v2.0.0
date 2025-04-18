@@ -231,11 +231,13 @@ excerpt: "文章摘要"
   - 支持登出功能
   - 未登录用户可以正常浏览网站内容
   - 只有登录用户才能进行文章管理操作
+  - 在导航栏提供登录入口
 - **实现方式**：
   - 使用 Cloudflare Workers 处理认证逻辑
   - 使用 Cloudflare KV 存储白名单邮箱列表和用户会话
   - 使用 Cloudflare Email Workers 发送验证码
   - 使用 localStorage 存储登录状态
+  - 在导航栏组件中根据登录状态显示不同按钮
 
 #### **10.1.2 文章管理功能**
 - **需求描述**：
@@ -246,11 +248,14 @@ excerpt: "文章摘要"
     - 删除文章
   - 支持文章预览功能
   - 支持文章草稿功能
+  - 文章内容存储在 GitHub Issues 中
+  - 文章元数据（标题、分类、标签等）存储在 GitHub Issues 的标签中
 - **实现方式**：
   - 使用 GitHub API 存储和管理 Markdown 文件
   - 使用 GitHub Issues 存储文章元数据
   - 前端实现 Markdown 编辑器（使用 tiptap 或类似的编辑器）
   - 前端根据登录状态显示/隐藏管理功能
+  - 使用 GitHub Issues 的标签系统管理分类和标签
 
 ### **10.2 技术方案**
 
@@ -261,32 +266,22 @@ excerpt: "文章摘要"
   - Email Workers：处理邮件发送
   - Pages：部署静态前端
 - **GitHub 服务**：
-  - GitHub API：存储和管理 Markdown 文件
+  - GitHub API：存储和管理文章内容
   - GitHub Issues：存储文章元数据
   - GitHub Actions：自动化部署流程
 
-#### **10.2.2 前端实现**
-- **认证流程**：
-  ```typescript
-  // 登录流程
-  1. 用户输入邮箱
-  2. 前端调用 Worker API 验证邮箱
-  3. Worker 检查白名单并发送验证码
-  4. 用户输入验证码
-  5. Worker 验证成功后返回会话令牌
-  6. 前端存储会话令牌
-  ```
-
-- **文章管理流程**：
-  ```typescript
-  // 文章发布流程
-  1. 用户编写 Markdown 内容
-  2. 前端调用 Worker API 上传文章
-  3. Worker 验证用户权限
-  4. Worker 通过 GitHub API 创建/更新 Markdown 文件
-  5. Worker 通过 GitHub API 创建/更新文章元数据
-  6. GitHub Actions 自动触发 Pages 重新构建
-  ```
+#### **10.2.2 文章存储结构**
+```typescript
+// GitHub Issue 结构
+{
+  title: "文章标题",
+  body: "Markdown 内容",
+  labels: ["分类1", "分类2", "标签1", "标签2"],
+  state: "open" | "closed", // closed 表示已删除
+  created_at: "创建时间",
+  updated_at: "更新时间"
+}
+```
 
 ### **10.3 安全考虑**
 - **邮箱白名单**：

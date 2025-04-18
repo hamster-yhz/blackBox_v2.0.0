@@ -23,6 +23,29 @@
         
         <!-- 移动端菜单 -->
         <MobileMenu class="mobile-menu-wrapper" />
+
+        <div v-if="!isAuthenticated" class="flex items-center">
+          <button
+            @click="$router.push('/login')"
+            class="ml-4 px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+          >
+            登录
+          </button>
+        </div>
+        <div v-else class="flex items-center space-x-4">
+          <router-link
+            to="/admin"
+            class="text-gray-900 dark:text-gray-100 hover:text-indigo-600 dark:hover:text-indigo-400"
+          >
+            管理
+          </router-link>
+          <button
+            @click="handleLogout"
+            class="ml-4 px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+          >
+            退出登录
+          </button>
+        </div>
       </div>
     </div>
   </header>
@@ -33,8 +56,23 @@ import { useTheme } from '../composables/useTheme'
 import ThemeToggle from './ThemeToggle.vue'
 import MobileMenu from './MobileMenu.vue'
 import SearchBox from './SearchBox.vue'
+import { useAuth } from '../api/auth'
+import { useRouter } from 'vue-router'
 
 const { isDark } = useTheme()
+const router = useRouter()
+const { isAuthenticated, logout } = useAuth()
+
+const navigation = [
+  { name: '首页', path: '/' },
+  { name: '分类', path: '/categories' },
+  { name: '关于', path: '/about' },
+]
+
+const handleLogout = () => {
+  logout()
+  router.push('/')
+}
 </script>
 
 <style scoped>
@@ -63,32 +101,26 @@ const { isDark } = useTheme()
 }
 
 .logo {
-  font-size: 1.5rem;
-  font-weight: bold;
+  font-size: 1.25rem;
+  font-weight: 600;
   color: var(--text-primary);
   text-decoration: none;
-  transition: color 0.2s;
-}
-
-.logo:hover {
-  color: var(--primary-color);
 }
 
 .desktop-nav {
   display: flex;
-  gap: 2rem;
+  gap: 1.5rem;
 }
 
 .desktop-nav a {
   color: var(--text-primary);
   text-decoration: none;
-  transition: color 0.2s;
   font-weight: 500;
+  transition: color 0.2s;
 }
 
-.desktop-nav a:hover,
-.desktop-nav a.router-link-active {
-  color: var(--primary-color);
+.desktop-nav a:hover {
+  color: var(--text-hover);
 }
 
 .navbar-right {
@@ -98,14 +130,11 @@ const { isDark } = useTheme()
 }
 
 .search-box {
-  width: 300px;
+  margin-right: 1rem;
 }
 
-/* 调整媒体查询断点 */
-@media (max-width: 1024px) {
-  .search-box {
-    width: 200px;
-  }
+.mobile-menu-wrapper {
+  display: none;
 }
 
 @media (max-width: 768px) {
@@ -113,18 +142,16 @@ const { isDark } = useTheme()
     display: none;
   }
 
+  .mobile-menu-wrapper {
+    display: block;
+  }
+
   .search-box {
     display: none;
   }
 
-  .mobile-menu-wrapper {
-    display: block;
-  }
-}
-
-@media (min-width: 769px) {
-  .mobile-menu-wrapper {
-    display: none;
+  .navbar-right {
+    gap: 0.5rem;
   }
 }
 
@@ -142,8 +169,7 @@ const { isDark } = useTheme()
   color: var(--text-primary);
 }
 
-.dark .desktop-nav a:hover,
-.dark .desktop-nav a.router-link-active {
-  color: var(--primary-color);
+.dark .desktop-nav a:hover {
+  color: var(--text-hover);
 }
 </style> 

@@ -25,6 +25,20 @@
         <router-link to="/" @click="closeMenu">首页</router-link>
         <router-link to="/categories" @click="closeMenu">分类</router-link>
         <router-link to="/about" @click="closeMenu">关于</router-link>
+        
+        <template v-if="!isAuthenticated">
+          <router-link to="/login" @click="closeMenu" class="login-link">
+            登录
+          </router-link>
+        </template>
+        <template v-else>
+          <router-link to="/admin" @click="closeMenu" class="admin-link">
+            管理
+          </router-link>
+          <button @click="handleLogout" class="logout-button">
+            退出登录
+          </button>
+        </template>
       </nav>
       <div class="menu-footer">
         <ThemeToggle />
@@ -45,7 +59,11 @@ import { ref, onUnmounted } from 'vue'
 import ThemeToggle from './ThemeToggle.vue'
 import SearchBox from './SearchBox.vue'
 import { vClickOutside } from '../directives/clickOutside'
+import { useAuth } from '../api/auth'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
+const { isAuthenticated, logout } = useAuth()
 const isOpen = ref(false)
 
 const toggleMenu = () => {
@@ -62,6 +80,12 @@ const closeMenu = () => {
     isOpen.value = false
     document.body.style.overflow = ''
   }
+}
+
+const handleLogout = () => {
+  logout()
+  closeMenu()
+  router.push('/')
 }
 
 // 确保在组件卸载时恢复 body 的滚动
@@ -98,93 +122,106 @@ onUnmounted(() => {
   .hamburger span {
     display: block;
     width: 2rem;
-    height: 0.25rem;
+    height: 2px;
     background: var(--text-primary);
     border-radius: 10px;
     transition: all 0.3s linear;
     position: relative;
-    transform-origin: center;
+    transform-origin: 1px;
   }
 
-  .hamburger.is-active span:first-child {
-    transform: translateY(0.7rem) rotate(45deg);
+  .hamburger.is-active span:nth-child(1) {
+    transform: rotate(45deg);
   }
 
   .hamburger.is-active span:nth-child(2) {
     opacity: 0;
-    transform: translateX(-100%);
   }
 
   .hamburger.is-active span:nth-child(3) {
-    transform: translateY(-0.7rem) rotate(-45deg);
+    transform: rotate(-45deg);
   }
 
   .menu-content {
     position: fixed;
     top: 0;
-    left: 0;
-    width: 100%;
+    right: -100%;
+    width: 80%;
+    max-width: 300px;
     height: 100vh;
     background: var(--bg-primary);
+    padding: 2rem 1rem;
+    transition: right 0.3s ease;
+    z-index: 1000;
     display: flex;
     flex-direction: column;
-    padding: 5rem 2rem;
-    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
-    transform: translateX(-100%);
-    opacity: 0;
-    z-index: 1000;
-    overflow-y: auto;
   }
 
   .menu-content.is-open {
-    transform: translateX(0);
-    opacity: 1;
+    right: 0;
   }
 
-  nav {
+  .menu-content nav {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: 1rem;
     margin-bottom: 2rem;
   }
 
-  nav a {
+  .menu-content a,
+  .menu-content button {
     color: var(--text-primary);
     text-decoration: none;
-    font-size: 1.5rem;
-    transition: color 0.3s;
     padding: 0.5rem 0;
+    font-size: 1rem;
+    transition: color 0.2s;
   }
 
-  nav a:hover,
-  nav a.router-link-active {
-    color: var(--primary-color);
+  .menu-content a:hover,
+  .menu-content button:hover {
+    color: var(--text-hover);
+  }
+
+  .login-link,
+  .admin-link {
+    margin-top: 1rem;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    background: var(--primary-color);
+    color: white;
+    text-align: center;
+  }
+
+  .logout-button {
+    margin-top: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    background: var(--danger-color);
+    color: white;
+    text-align: center;
+    width: 100%;
+    border: none;
+    cursor: pointer;
+  }
+
+  .mobile-search {
+    margin-bottom: 1rem;
   }
 
   .menu-footer {
     margin-top: auto;
-    display: flex;
-    justify-content: center;
-    padding: 2rem 0;
+    padding-top: 1rem;
     border-top: 1px solid var(--border-color);
   }
 
-  .mobile-search {
-    margin-bottom: 2rem;
+  .menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
-  }
-
-  /* 暗色模式样式 */
-  .dark .menu-content {
-    background: var(--bg-primary);
-  }
-
-  .dark .hamburger span {
-    background: var(--text-primary);
-  }
-
-  .dark .menu-footer {
-    border-top-color: var(--border-color);
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
   }
 }
 
@@ -192,21 +229,5 @@ onUnmounted(() => {
   .mobile-menu-wrapper {
     display: none !important;
   }
-}
-
-.menu-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 999;
-  opacity: 0;
-  transition: opacity 0.3s ease-in-out;
-}
-
-.menu-overlay.is-open {
-  opacity: 1;
 }
 </style> 
