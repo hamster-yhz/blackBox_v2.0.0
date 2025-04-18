@@ -61,7 +61,7 @@
                     编辑
                   </button>
                   <button
-                    @click="deletePost(post.id)"
+                    @click="handleDeletePost(post.id)"
                     class="text-red-600 hover:text-red-900"
                   >
                     删除
@@ -142,12 +142,13 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '../api/auth'
-import { createPost, updatePost, deletePost, getPosts } from '../api/posts'
+import { createPost, getPosts, deletePost } from '../api/posts'
+import type { Article } from '../utils/markdown'
 
 const router = useRouter()
 const { isAuthenticated, logout: authLogout } = useAuth()
 
-const posts = ref([])
+const posts = ref<Article[]>([])
 const showNewPostModal = ref(false)
 const currentPost = ref({
   title: '',
@@ -192,28 +193,32 @@ const handleSubmit = async () => {
   }
 }
 
-const editPost = (post) => {
+const editPost = (post: Article) => {
   if (!isAuthenticated.value) {
     router.push('/login')
     return
   }
 
   currentPost.value = {
-    ...post,
+    title: post.title,
+    content: post.content,
     categories: post.categories.join(', '),
     tags: post.tags.join(', '),
+    excerpt: post.summary,
   }
   showNewPostModal.value = true
 }
 
-const deletePost = async (id) => {
+const handleDeletePost = async (id: string) => {
   if (!isAuthenticated.value) {
     router.push('/login')
     return
   }
 
-  if (!confirm('确定要删除这篇文章吗？')) return
-  
+  if (!confirm('确定要删除这篇文章吗？')) {
+    return
+  }
+
   try {
     await deletePost(id)
     await loadPosts()

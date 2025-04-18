@@ -1,8 +1,8 @@
 ---
 title: "Spring Security 安全认证最佳实践"
-date: "2024-04-18"
+date: "2024-04-13"
 tags: ["Java", "认证授权"]
-categories: ["Spring"]
+categories: ["Spring","推荐阅读"]
 readTime: "4 分钟阅读"
 summary: "深入探讨 Spring Security 的安全认证机制、授权策略、JWT 实现等核心主题，帮助开发者构建安全可靠的应用系统。"
 ---

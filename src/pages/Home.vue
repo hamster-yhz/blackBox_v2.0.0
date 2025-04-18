@@ -18,7 +18,7 @@
             class="carousel-image"
           />
           <div class="carousel-content">
-            <h1 class="hero-title">黑盒博客</h1>
+            <h1 class="hero-title">黑盒</h1>
             <p class="hero-subtitle">探索技术的奥秘，分享开发的乐趣</p>
           </div>
         </div>
@@ -35,7 +35,33 @@
     </header>
 
     <main class="main-content">
-      <ArticleList :limit="3" />
+      <div class="latest-section">
+        <h2 class="section-title">最新文章</h2>
+        <ArticleList :limit="1" />
+      </div>
+      
+      <div class="recommended-section" v-if="recommendedArticles.length > 0">
+        <h2 class="section-title">推荐阅读</h2>
+        <div class="recommended-articles">
+          <article 
+            v-for="article in recommendedArticles" 
+            :key="article.id" 
+            class="recommended-article"
+          >
+            <router-link :to="`/article/${article.id}`" class="article-link">
+              <h3 class="article-title">{{ article.title }}</h3>
+            </router-link>
+            <div class="article-meta">
+              <span class="article-date">{{ formatDate(article.date) }}</span>
+              <span class="article-read-time">{{ article.readTime }}</span>
+            </div>
+            <p class="article-summary">{{ article.summary }}</p>
+            <router-link :to="`/article/${article.id}`" class="read-more">
+              阅读更多
+            </router-link>
+          </article>
+        </div>
+      </div>
     </main>
   </div>
 </template>
@@ -44,8 +70,12 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import ArticleList from '../components/ArticleList.vue'
 import { useTheme } from '../composables/useTheme'
+import { useArticles } from '../composables/useArticles'
+import type { Article } from '../utils/markdown'
 
 const { isDark } = useTheme()
+const { loadRecommendedArticles } = useArticles()
+const recommendedArticles = ref<Article[]>([])
 
 const carouselImages = [
   '/images/hero-1.jpeg',
@@ -73,8 +103,28 @@ const nextImage = () => {
   currentIndex.value = (currentIndex.value + 1) % carouselImages.length
 }
 
-onMounted(() => {
+function formatDate(dateString: string): string {
+  try {
+    const date = new Date(dateString)
+    return new Intl.DateTimeFormat('zh-CN', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    }).format(date)
+  } catch {
+    return dateString
+  }
+}
+
+onMounted(async () => {
   timer = window.setInterval(nextImage, 5000)
+  
+  // 加载推荐文章
+  try {
+    recommendedArticles.value = await loadRecommendedArticles()
+  } catch (e) {
+    console.error('Failed to load recommended articles:', e)
+  }
 })
 
 onUnmounted(() => {
@@ -211,8 +261,93 @@ onUnmounted(() => {
 
 .main-content {
   max-width: 1200px;
-  margin: 2rem auto;
-  padding: 0 1rem;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: var(--text-primary);
+  padding-left: 1rem;
+  border-left: 4px solid var(--primary-color);
+}
+
+.recommended-section {
+  margin-bottom: 3rem;
+}
+
+.recommended-articles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.recommended-article {
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px var(--shadow-color);
+  border: 1px solid var(--border-color);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.recommended-article:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px var(--shadow-color);
+  border-color: var(--primary-color-light);
+}
+
+.recommended-article .article-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: var(--text-primary);
+  line-height: 1.4;
+  transition: color 0.2s;
+}
+
+.recommended-article .article-title:hover {
+  color: var(--primary-color);
+}
+
+.recommended-article .article-meta {
+  display: flex;
+  justify-content: space-between;
+  color: var(--text-tertiary);
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.recommended-article .article-summary {
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+  flex-grow: 1;
+}
+
+.recommended-article .read-more {
+  align-self: flex-start;
+  color: var(--primary-color);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+}
+
+.recommended-article .read-more:hover {
+  color: var(--primary-color-dark);
+  text-decoration: underline;
+}
+
+.latest-section {
+  margin-top: 2rem;
 }
 
 @media (max-width: 1024px) {
@@ -227,6 +362,18 @@ onUnmounted(() => {
     height: 400px;
     min-height: 300px;
     border-radius: 0;
+  }
+  
+  .recommended-articles {
+    grid-template-columns: 1fr;
+  }
+  
+  .section-title {
+    font-size: 1.25rem;
+  }
+  
+  .recommended-article .article-title {
+    font-size: 1.125rem;
   }
 }
 

@@ -18,7 +18,7 @@
       <div class="mb-8">
         <h1 class="text-3xl font-bold mb-2">{{ category?.name }}</h1>
         <p class="text-gray-600 dark:text-gray-400">
-          {{ category?.count }} articles in this category
+          {{ category?.articles.length }} articles in this category
         </p>
       </div>
       
@@ -35,7 +35,7 @@
           <h2 class="text-xl font-semibold mb-2">{{ article.title }}</h2>
           <p class="text-gray-600 dark:text-gray-300 mb-4">{{ article.summary }}</p>
           <div class="flex justify-between items-center">
-            <span class="text-sm text-gray-500">{{ formatDate(article.createdAt) }}</span>
+            <span class="text-sm text-gray-500">{{ formatDate(article.date) }}</span>
             <router-link 
               :to="`/article/${article.id}`" 
               class="text-primary hover:underline"

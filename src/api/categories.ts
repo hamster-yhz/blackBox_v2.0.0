@@ -26,7 +26,7 @@ export async function getCategories(): Promise<Category[]> {
   articles.forEach(article => {
     if (article.categories && Array.isArray(article.categories)) {
       article.categories.forEach(category => {
-        const existing = categoryMap.get(category) || { count: 0, name: category }
+        const existing = categoryMap.get(category) || { count: 0, name: getCategoryName(category) }
         categoryMap.set(category, {
           count: existing.count + 1,
           name: existing.name
@@ -35,11 +35,21 @@ export async function getCategories(): Promise<Category[]> {
     }
   })
   
-  return Array.from(categoryMap.entries()).map(([id, data]) => ({
+  // 将分类转换为数组并排序
+  let categories = Array.from(categoryMap.entries()).map(([id, data]) => ({
     id,
     name: data.name,
     count: data.count
   }))
+
+  // 如果存在推荐阅读分类，将其移到第一位
+  const recommendedIndex = categories.findIndex(cat => cat.id === '推荐阅读')
+  if (recommendedIndex !== -1) {
+    const recommended = categories.splice(recommendedIndex, 1)[0]
+    categories = [recommended, ...categories]
+  }
+  
+  return categories
 }
 
 // 获取分类详情
@@ -55,7 +65,7 @@ export async function getCategoryById(id: string): Promise<CategoryDetail> {
   
   return {
     id,
-    name: id,
+    name: getCategoryName(id),
     articles: categoryArticles.map(article => ({
       id: article.id,
       title: article.title,
@@ -67,7 +77,7 @@ export async function getCategoryById(id: string): Promise<CategoryDetail> {
 }
 
 // 获取分类名称
-function getCategoryName(id: string): string {
+export function getCategoryName(id: string): string {
   const names: Record<string, string> = {
     frontend: '前端开发',
     backend: '后端开发',

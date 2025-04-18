@@ -11,7 +11,7 @@
         <h1 class="article-title">{{ article.title }}</h1>
         <div class="article-meta">
           <span class="article-date">{{ formatDate(article.date) }}</span>
-          <span class="article-category">{{ getCategoryName(article.category) }}</span>
+          <span class="article-category">{{ article.categories[0] }}</span>
           <span class="article-read-time">{{ article.readTime }}</span>
         </div>
         <div class="article-tags" v-if="article.tags && article.tags.length">
@@ -80,6 +80,13 @@ import { Marked } from 'marked'
 import { configureHighlight, applyHighlight } from '../utils/highlight'
 import TocItem from '../components/TocItem.vue'
 
+interface TocItem {
+  id: string
+  text: string
+  level: number
+  children: TocItem[]
+}
+
 // Configure marked
 const marked = new Marked({
   ...configureHighlight(),
@@ -95,20 +102,13 @@ const tocItems = ref<TocItem[]>([])
 const activeHeading = ref('')
 const { isDark } = useTheme()
 const contentRef = ref<HTMLElement | null>(null)
+const lastScrollTop = ref(0)
 
 // 移动端状态管理
 const showFloatingButton = ref(false)
 const showMobileToc = ref(false)
-const lastScrollTop = ref(0)
 const windowWidth = ref(window.innerWidth)
 const isMobileView = computed(() => windowWidth.value <= 768)
-
-interface TocItem {
-  id: string
-  text: string
-  level: number
-  children: TocItem[]
-}
 
 const processContent = (content: string): { html: string, toc: TocItem[] } => {
   const items: TocItem[] = []
@@ -119,7 +119,7 @@ const processContent = (content: string): { html: string, toc: TocItem[] } => {
   })
   
   // 处理标题并生成目录项
-  processedContent = processedContent.replace(/^(#{1,6})\s+(.+)$/gm, (match, hashes, title) => {
+  processedContent = processedContent.replace(/^(#{1,6})\s+(.+)$/gm, (_match, hashes, title) => {
     const level = hashes.length
     const text = title.trim()
     // 生成一个更可靠的唯一ID
@@ -133,7 +133,7 @@ const processContent = (content: string): { html: string, toc: TocItem[] } => {
   processedContent = processedContent.replace(/§/g, '#')
   
   // 使用 marked 处理 Markdown
-  const html = marked.parse(processedContent)
+  const html = String(marked.parse(processedContent))
 
   return {
     html,
@@ -183,12 +183,10 @@ function updateActiveHeading() {
   const headings = Array.from(contentRef.value.querySelectorAll('h1, h2, h3, h4, h5, h6'))
   if (headings.length === 0) return
 
-  const scrollTop = window.scrollY
-  const viewportHeight = window.innerHeight
   const threshold = 150 // 阈值，用于确定标题是否在视图中
 
   // 找到当前视口中最靠上的标题
-  let currentHeading = null
+  let currentHeading: Element | null = null
   let minDistance = Infinity
 
   headings.forEach(heading => {
@@ -201,22 +199,11 @@ function updateActiveHeading() {
     }
   })
 
-  // 如果没有找到在阈值之上的标题，就找最接近视口顶部的标题
-  if (!currentHeading) {
-    headings.forEach(heading => {
-      const rect = heading.getBoundingClientRect()
-      const distance = Math.abs(rect.top)
-      
-      if (distance < minDistance) {
-        minDistance = distance
-        currentHeading = heading
-      }
-    })
-  }
-
-  // 更新高亮状态
-  if (currentHeading && currentHeading.id !== activeHeading.value) {
-    activeHeading.value = currentHeading.id
+  if (currentHeading) {
+    const headingId = (currentHeading as unknown as HTMLElement).id
+    if (headingId && headingId !== activeHeading.value) {
+      activeHeading.value = headingId
+    }
   }
 }
 
@@ -258,21 +245,19 @@ function handleMobileTocClick(event: MouseEvent, id: string) {
   showMobileToc.value = false
 }
 
-// 监听滚动以显示/隐藏悬浮按钮
+// 处理滚动事件
 function handleScroll() {
-  if (!isMobileView.value) return
-
   const currentScrollTop = window.scrollY
   const scrollingDown = currentScrollTop > lastScrollTop.value
-  const scrollThreshold = 100 // 滚动多少距离后显示按钮
-
-  if (scrollingDown && currentScrollTop > scrollThreshold) {
+  
+  if (scrollingDown) {
     showFloatingButton.value = true
-  } else if (!scrollingDown && currentScrollTop < scrollThreshold) {
+  } else {
     showFloatingButton.value = false
   }
-
+  
   lastScrollTop.value = currentScrollTop
+  updateActiveHeading()
 }
 
 // 监听窗口大小变化
@@ -287,17 +272,6 @@ function formatDate(dateString: string): string {
     month: 'long',
     day: 'numeric'
   })
-}
-
-// 获取分类名称
-function getCategoryName(id: string): string {
-  const categoryNames: Record<string, string> = {
-    'frontend': '前端开发',
-    'backend': '后端开发',
-    'devops': 'DevOps',
-    'algorithm': '算法'
-  }
-  return categoryNames[id] || id
 }
 
 // 创建一个清理函数

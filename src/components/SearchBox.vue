@@ -50,7 +50,7 @@
           <h3>{{ result.item.title }}</h3>
           <p>{{ result.item.summary }}</p>
           <div class="meta">
-            <span>{{ result.item.createdAt }}</span>
+            <span>{{ result.item.date }}</span>
           </div>
         </router-link>
       </div>
@@ -60,13 +60,15 @@
 
 <script setup lang="ts">
 import { ref, watch, onMounted, onUnmounted } from 'vue'
+import type { FuseResult } from 'fuse.js'
 import Fuse from 'fuse.js'
 import { useArticles } from '../composables/useArticles'
+import type { Article } from '../utils/markdown'
 
 const searchInput = ref<HTMLInputElement | null>(null)
 const searchQuery = ref('')
 const isActive = ref(false)
-const searchResults = ref<Fuse.FuseResult<any>[]>([])
+const searchResults = ref<Array<FuseResult<Article> & { score: number }>>([])
 
 const { articles } = useArticles()
 
@@ -81,7 +83,10 @@ const fuse = new Fuse(articles.value, {
 // 监听搜索输入
 watch(searchQuery, (newQuery) => {
   if (newQuery.trim()) {
-    searchResults.value = fuse.search(newQuery).slice(0, 5)
+    searchResults.value = fuse.search(newQuery).slice(0, 5).map(result => ({
+      ...result,
+      score: result.score || 0
+    }))
   } else {
     searchResults.value = []
   }

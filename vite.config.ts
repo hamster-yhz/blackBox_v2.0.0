@@ -17,6 +17,7 @@ export default defineConfig({
     }
   },
   build: {
+    target: 'esnext',
     // 将 content 目录复制到 dist
     assetsDir: 'content',
     rollupOptions: {

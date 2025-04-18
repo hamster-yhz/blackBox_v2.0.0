@@ -9,7 +9,7 @@
 
 <script setup lang="ts">
 import { onMounted, watch } from 'vue'
-import Navbar from './components/Navbar.vue'
+import Navbar from './components/NavBar.vue'
 import { useTheme } from './composables/useTheme'
 
 const { isDark, initTheme } = useTheme()

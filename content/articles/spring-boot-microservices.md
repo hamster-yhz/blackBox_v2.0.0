@@ -1,6 +1,6 @@
 ---
 title: "Spring Boot 微服务架构实践"
-date: "2024-04-18"
+date: "2024-04-12"
 tags: ["Java", "微服务"]
 categories: ["Spring"]
 readTime: "8 分钟阅读"

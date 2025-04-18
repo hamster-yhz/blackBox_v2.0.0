@@ -46,12 +46,25 @@ export function useArticles() {
     }
   }
 
+  async function loadRecommendedArticles() {
+    try {
+      const recommendedArticles = await getArticlesByCategory('推荐阅读')
+      // 返回最多3篇推荐文章
+      return recommendedArticles.slice(0, 3)
+    } catch (e) {
+      console.error('Failed to load recommended articles:', e)
+      // 如果出错，返回空数组而不是抛出错误，防止页面崩溃
+      return []
+    }
+  }
+
   return {
     articles,
     isLoading,
     error,
     loadArticles,
     loadArticleById,
-    loadArticlesByCategory
+    loadArticlesByCategory,
+    loadRecommendedArticles
   }
 } 

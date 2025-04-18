@@ -26,18 +26,21 @@
             </div>
             <span class="article-read-time">{{ article.readTime }}</span>
           </div>
-          
-          <div class="article-tags" v-if="article.tags && article.tags.length > 0">
-            <span v-for="tag in article.tags" :key="tag" class="tag">{{ tag }}</span>
-          </div>
         </div>
         
         <p class="article-summary">{{ article.summary }}</p>
         
         <div class="article-footer">
-          <router-link :to="`/article/${article.id}`" class="read-more">
-            阅读更多
-          </router-link>
+          <div class="footer-left">
+            <div class="article-tags" v-if="article.tags && article.tags.length > 0">
+              <span v-for="tag in article.tags" :key="tag" class="tag">{{ tag }}</span>
+            </div>
+          </div>
+          <div class="footer-right">
+            <router-link :to="`/article/${article.id}`" class="read-more">
+              阅读更多
+            </router-link>
+          </div>
         </div>
       </article>
     </template>
@@ -60,16 +63,6 @@ const displayedArticles = computed(() => {
   if (!props.limit) return articles.value
   return articles.value.slice(0, props.limit)
 })
-
-function getCategoryName(id: string): string {
-  const categoryNames: Record<string, string> = {
-    'frontend': '前端开发',
-    'backend': '后端开发',
-    'devops': 'DevOps',
-    'algorithm': '算法'
-  }
-  return categoryNames[id] || id
-}
 
 function formatDate(dateString: string): string {
   try {
@@ -100,10 +93,10 @@ onMounted(async () => {
 .article-list {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1.5rem;
   max-width: 800px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 1.5rem;
 }
 
 .loading-state,
@@ -141,7 +134,7 @@ onMounted(async () => {
 .article-card {
   background: var(--bg-secondary);
   border-radius: 12px;
-  padding: 1.5rem;
+  padding: 1.25rem;
   transition: all 0.3s ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   border: 1px solid var(--border-color);
@@ -154,7 +147,7 @@ onMounted(async () => {
 }
 
 .article-header {
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
 }
 
 .article-link {
@@ -164,9 +157,9 @@ onMounted(async () => {
 
 .article-title {
   color: var(--text-primary);
-  font-size: 1.5rem;
+  font-size: 1.35rem;
   font-weight: 700;
-  margin: 0 0 1rem;
+  margin: 0 0 0.75rem;
   transition: color 0.2s;
   line-height: 1.4;
   letter-spacing: -0.01em;
@@ -178,10 +171,10 @@ onMounted(async () => {
 
 .article-meta {
   display: flex;
-  gap: 1.5rem;
+  gap: 1.25rem;
   color: var(--text-tertiary);
   font-size: 0.875rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
   flex-wrap: wrap;
   align-items: center;
 }
@@ -220,11 +213,42 @@ onMounted(async () => {
   content: '⏱️';
 }
 
+.article-summary {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.article-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--border-color);
+  padding-top: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.footer-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.footer-right {
+  flex-shrink: 0;
+  margin-left: 1rem;
+}
+
 .article-tags {
   display: flex;
   gap: 0.5rem;
-  margin-bottom: 0.5rem;
   flex-wrap: wrap;
+  overflow: hidden;
 }
 
 .tag {
@@ -236,31 +260,12 @@ onMounted(async () => {
   font-weight: 500;
   letter-spacing: 0.02em;
   transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .tag:hover {
   background: var(--primary-color);
   color: white;
-}
-
-.article-summary {
-  color: var(--text-secondary);
-  line-height: 1.7;
-  margin-bottom: 1.5rem;
-  font-size: 0.95rem;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.article-footer {
-  display: flex;
-  justify-content: flex-end;
-  border-top: 1px solid var(--border-color);
-  padding-top: 1rem;
-  margin-top: 1rem;
 }
 
 .read-more {
@@ -275,6 +280,7 @@ onMounted(async () => {
   padding: 0.5rem 1rem;
   border-radius: 6px;
   background: var(--primary-color-light);
+  white-space: nowrap;
 }
 
 .read-more:hover {
@@ -299,28 +305,38 @@ onMounted(async () => {
 @media (max-width: 768px) {
   .article-list {
     padding: 1rem;
+    gap: 1rem;
   }
 
   .article-card {
-    padding: 1.25rem;
+    padding: 1rem;
   }
 
   .article-title {
-    font-size: 1.25rem;
+    font-size: 1.2rem;
   }
 
   .article-meta {
-    gap: 1rem;
+    gap: 0.75rem;
   }
 }
 
 @media (max-width: 480px) {
   .article-card {
-    padding: 1rem;
+    padding: 0.875rem;
   }
 
   .article-meta {
     font-size: 0.8rem;
+    gap: 0.5rem;
+  }
+
+  .article-footer {
+    gap: 0.5rem;
+  }
+
+  .footer-right {
+    margin-left: 0.5rem;
   }
 
   .tag {

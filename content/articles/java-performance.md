@@ -2,7 +2,7 @@
 title: "Java 性能优化指南"
 date: "2024-04-18"
 tags: ["JVM"]
-categories: ["JVM"]
+categories: ["JVM", "推荐阅读"]
 readTime: "5 分钟阅读"
 summary: "深入探讨 Java 应用程序性能优化的各个方面，包括 JVM 调优、代码优化、内存管理等内容，帮助开发者提升应用性能。"
 ---

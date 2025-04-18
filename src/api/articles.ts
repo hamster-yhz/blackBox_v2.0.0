@@ -30,14 +30,16 @@ export async function getArticleById(id: string): Promise<Article | undefined> {
 
 // 获取分类文章
 export async function getArticlesByCategory(category: string): Promise<Article[]> {
-  return parsedArticles.filter(article => article.category === category)
+  return parsedArticles.filter(article => article.categories.includes(category))
 }
 
 // 获取所有分类
 export async function getCategories(): Promise<Category[]> {
   const categoryMap = new Map<string, number>()
   parsedArticles.forEach(article => {
-    categoryMap.set(article.category, (categoryMap.get(article.category) || 0) + 1)
+    article.categories.forEach(category => {
+      categoryMap.set(category, (categoryMap.get(category) || 0) + 1)
+    })
   })
   
   return Array.from(categoryMap.entries()).map(([id, count]) => ({

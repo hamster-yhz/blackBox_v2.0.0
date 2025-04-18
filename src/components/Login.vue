@@ -4,11 +4,17 @@
       <div class="login-container max-w-md w-full space-y-6 bg-gray-50 dark:bg-gray-800 p-8 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700">
         <div>
           <h2 class="login-title mt-2 text-center text-3xl font-extrabold">
-            登录黑盒博客
+            登录黑盒
           </h2>
           <p class="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
             请输入您的邮箱地址，我们将发送验证码到您的邮箱
           </p>
+          <div class="mt-3 px-4 py-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
+            <p class="text-center text-sm text-indigo-600 dark:text-indigo-400 leading-relaxed">
+              <span class="font-medium">温馨提示：</span>登录功能仅供博主本人使用<br>
+              访客无需登录即可浏览文章，<br>如有不便，敬请谅解，敬请谅解
+            </p>
+          </div>
         </div>
 
         <!-- 提示消息 -->

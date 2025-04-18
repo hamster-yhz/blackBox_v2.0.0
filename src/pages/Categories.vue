@@ -31,13 +31,11 @@
 import { ref, onMounted } from 'vue'
 import { getCategories, type Category } from '../api/categories'
 import { useRouter } from 'vue-router'
-import { useTheme } from '../composables/useTheme'
 
 const categories = ref<Category[]>([])
 const loading = ref(true)
 const error = ref<string | null>(null)
 const router = useRouter()
-const { isDark } = useTheme()
 
 async function fetchCategories() {
   try {

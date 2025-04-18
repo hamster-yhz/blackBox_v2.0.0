@@ -60,15 +60,9 @@ import SearchBox from './SearchBox.vue'
 import { useAuth } from '../api/auth'
 import { useRouter } from 'vue-router'
 
-const { isDark, toggleTheme } = useTheme()
+const { isDark } = useTheme()
 const router = useRouter()
 const { isAuthenticated, logout } = useAuth()
-
-const navigation = [
-  { name: '首页', path: '/' },
-  { name: '分类', path: '/categories' },
-  { name: '关于', path: '/about' },
-]
 
 const handleLogout = () => {
   logout()

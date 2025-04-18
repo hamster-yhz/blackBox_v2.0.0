@@ -2,7 +2,7 @@
 title: "Java 并发编程实战"
 date: "2024-04-17"
 tags: ["JUC"]
-categories: ["JUC"]
+categories: ["JUC", "推荐阅读"]
 readTime: "6 分钟阅读"
 summary: "深入探讨 Java 并发编程的核心概念和实践技巧，包括线程管理、同步机制、线程安全等内容，帮助开发者构建高性能的并发应用。"
 ---
