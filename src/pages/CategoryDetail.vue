@@ -1,29 +1,39 @@
 <template>
   <div class="container mx-auto px-4 py-8">
     <div v-if="loading" class="text-center py-8">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-white mx-auto"></div>
     </div>
     <div v-else-if="error" class="text-red-500 text-center py-8">
       {{ error }}
     </div>
     <div v-else>
       <header class="text-center mb-12">
-        <h1 class="text-4xl font-bold mb-2">{{ getCategoryName(categoryId) }}</h1>
+        <h1 class="category-detail-title text-4xl font-bold mb-2">{{ getCategoryName(categoryId) }}</h1>
         <p class="text-gray-500 dark:text-gray-400">{{ articles.length }} 篇文章</p>
       </header>
 
       <div class="grid gap-8">
-        <div v-for="article in articles" :key="article.id" class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
-          <router-link :to="`/article/${article.id}`" class="block p-6">
-            <h2 class="text-xl font-semibold mb-2">{{ article.title }}</h2>
+        <div 
+          v-for="article in articles" 
+          :key="article.id" 
+          class="article-card bg-gray-50 dark:bg-gray-800 rounded-xl shadow-md hover:shadow-lg overflow-hidden border border-gray-100 dark:border-gray-700 transition-all duration-200"
+        >
+          <router-link :to="`/article/${article.id}`" class="block p-6 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors duration-200">
+            <h2 class="article-title text-xl font-semibold mb-2">
+              {{ article.title }}
+            </h2>
             <div class="text-sm text-gray-500 dark:text-gray-400 mb-4">
               <span>{{ article.date }}</span>
               <span class="mx-2">•</span>
               <span>{{ article.readTime }}</span>
             </div>
             <p class="text-gray-600 dark:text-gray-300">{{ extractSummary(article.content) }}</p>
-            <div class="mt-4 flex gap-2">
-              <span v-for="tag in article.tags" :key="tag" class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+            <div class="mt-4 flex flex-wrap gap-2">
+              <span 
+                v-for="tag in article.tags" 
+                :key="tag" 
+                class="text-xs px-3 py-1 rounded-full bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-300"
+              >
                 {{ tag }}
               </span>
             </div>
@@ -101,15 +111,24 @@ function getCategoryName(id: string): string {
 }
 
 .article-card {
-  background: var(--bg-secondary);
-  border-radius: 12px;
-  padding: 1.5rem;
-  transition: transform 0.2s, box-shadow 0.2s;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
 }
 
 .article-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--border-color-hover);
+}
+
+.dark .article-card {
+  background-color: var(--bg-card);
+  border-color: var(--border-color);
+}
+
+.dark .article-card:hover {
+  border-color: var(--border-color-hover);
 }
 
 .article-link {
@@ -120,7 +139,7 @@ h2 {
   color: var(--text-primary);
   font-size: 1.5rem;
   margin-bottom: 1rem;
-  transition: color 0.2s;
+  transition: color 0.2s ease;
 }
 
 h2:hover {
@@ -169,10 +188,25 @@ h2:hover {
 
   .article-card {
     padding: 1rem;
+    margin: 0 -1rem;
+    border-radius: 0;
   }
 
   h2 {
     font-size: 1.25rem;
   }
+}
+
+.category-detail-title {
+  color: var(--text-primary);
+}
+
+.article-title {
+  color: var(--text-primary);
+  transition: color 0.2s ease;
+}
+
+.article-title:hover {
+  color: var(--primary-color);
 }
 </style> 

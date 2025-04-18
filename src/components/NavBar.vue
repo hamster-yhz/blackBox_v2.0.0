@@ -3,7 +3,7 @@
     <div class="navbar-container">
       <div class="navbar-left">
         <router-link to="/" class="logo">
-          黑盒博客
+          <span class="brand-text">BlackBox</span>
         </router-link>
       </div>
 
@@ -59,7 +59,7 @@ import SearchBox from './SearchBox.vue'
 import { useAuth } from '../api/auth'
 import { useRouter } from 'vue-router'
 
-const { isDark } = useTheme()
+const { isDark, toggleTheme } = useTheme()
 const router = useRouter()
 const { isAuthenticated, logout } = useAuth()
 
@@ -77,22 +77,25 @@ const handleLogout = () => {
 
 <style scoped>
 .navbar {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
+  height: 4rem;
+  background-color: var(--bg-card);
+  box-shadow: var(--shadow-sm);
   z-index: 1000;
-  background: var(--bg-primary);
-  border-bottom: 1px solid var(--border-color);
-  padding: 0.5rem 0;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .navbar-container {
   max-width: 1200px;
+  height: 100%;
   margin: 0 auto;
   padding: 0 1rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 3rem;
 }
 
 .navbar-left {
@@ -155,10 +158,10 @@ const handleLogout = () => {
   }
 }
 
-/* 暗色模式样式 */
+/* 移除暗色模式下的重复样式 */
 .dark .navbar {
-  background: var(--bg-primary);
-  border-bottom-color: var(--border-color);
+  background-color: var(--bg-card);
+  box-shadow: var(--shadow-sm);
 }
 
 .dark .logo {

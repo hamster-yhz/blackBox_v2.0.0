@@ -3,44 +3,96 @@
   --primary-color: #00A8FF;
   --primary-color-dark: #0077CC;
   --primary-color-alpha: rgba(0, 168, 255, 0.1);
+  --primary-color-hover: #0099E6;
 
   /* 背景色 */
   --bg-primary: #FFFFFF;
   --bg-secondary: #F8F9FA;
   --bg-hover: #F0F2F5;
+  --bg-card: #FFFFFF;
+  --bg-input: #FFFFFF;
 
   /* 文本颜色 */
   --text-primary: #1A1A1A;
   --text-secondary: #4A5568;
   --text-tertiary: #718096;
+  --text-hover: #00A8FF;
+  --text-muted: #A0AEC0;
 
   /* 边框颜色 */
   --border-color: #E2E8F0;
+  --border-color-hover: #CBD5E0;
 
   /* 代码块 */
   --code-bg: #F7F7F7;
   --code-block-bg: #282C34;
+  --code-text: #1A1A1A;
 
   /* 引用块 */
   --blockquote-bg: #F8F9FA;
+  --blockquote-border: #E2E8F0;
+
+  /* 按钮 */
+  --btn-primary-bg: #00A8FF;
+  --btn-primary-hover: #0099E6;
+  --btn-primary-text: #FFFFFF;
+  --btn-secondary-bg: #F8F9FA;
+  --btn-secondary-hover: #F0F2F5;
+  --btn-secondary-text: #4A5568;
+
+  /* 阴影 */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
 /* 暗色主题 */
 :root.dark {
+  /* 主题色 */
+  --primary-color: #00A8FF;
+  --primary-color-dark: #0077CC;
+  --primary-color-alpha: rgba(0, 168, 255, 0.2);
+  --primary-color-hover: #0099E6;
+
+  /* 背景色 */
   --bg-primary: #1A1A1A;
   --bg-secondary: #2D2D2D;
   --bg-hover: #363636;
+  --bg-card: #2D2D2D;
+  --bg-input: #2D2D2D;
 
+  /* 文本颜色 */
   --text-primary: #F3F4F6;
   --text-secondary: #D1D5DB;
   --text-tertiary: #9CA3AF;
+  --text-hover: #00A8FF;
+  --text-muted: #6B7280;
 
+  /* 边框颜色 */
   --border-color: #404040;
+  --border-color-hover: #4A4A4A;
 
+  /* 代码块 */
   --code-bg: #2D2D2D;
   --code-block-bg: #1E1E1E;
+  --code-text: #F3F4F6;
 
+  /* 引用块 */
   --blockquote-bg: #2D2D2D;
+  --blockquote-border: #404040;
+
+  /* 按钮 */
+  --btn-primary-bg: #00A8FF;
+  --btn-primary-hover: #0099E6;
+  --btn-primary-text: #FFFFFF;
+  --btn-secondary-bg: #2D2D2D;
+  --btn-secondary-hover: #363636;
+  --btn-secondary-text: #D1D5DB;
+
+  /* 阴影 */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
 }
 
 /* 修复图片、视频和画布的溢出问题 */

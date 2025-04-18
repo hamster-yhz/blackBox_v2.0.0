@@ -28,7 +28,7 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, nextTick, onUnmounted } from 'vue'
 import { marked } from 'marked'
-import type { Renderer } from 'marked'
+import type { Renderer, Token } from 'marked'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/github-dark.css'
 import { useTheme } from '../composables/useTheme'
@@ -44,12 +44,21 @@ const { isDark } = useTheme()
 
 // 配置 marked
 const renderer: Partial<Renderer> = {
-  heading(text: string, level: number): string {
+  heading({ tokens, depth }: { tokens: Token[]; depth: number }): string {
+    const text = tokens.map(token => {
+      if (token.type === 'text') {
+        return token.text
+      } else if (token.type === 'codespan') {
+        return token.text
+      }
+      return ''
+    }).join('')
+
     const id = text.toLowerCase()
       .trim()
       .replace(/[^\w\u4e00-\u9fa5]+/g, '-')
       .replace(/^-+|-+$/g, '')
-    return `<h${level} id="${id}">${text}</h${level}>`
+    return `<h${depth} id="${id}">${text}</h${depth}>`
   }
 }
 

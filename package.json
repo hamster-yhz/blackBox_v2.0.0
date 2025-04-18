@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^6.7.2",
     "@vercel/kv": "^3.0.0",
     "@vueuse/core": "^13.1.0",
     "fuse.js": "^7.1.0",

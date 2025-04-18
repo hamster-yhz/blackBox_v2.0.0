@@ -1,8 +1,9 @@
 import { ref } from 'vue'
 
-export function useTheme() {
-  const isDark = ref(true) // 默认使用暗色主题
+// 创建一个共享的状态
+const isDark = ref(true) // 默认使用暗色主题
 
+export function useTheme() {
   // 切换主题
   function toggleTheme() {
     isDark.value = !isDark.value
@@ -21,7 +22,9 @@ export function useTheme() {
     if (savedTheme) {
       isDark.value = savedTheme === 'dark'
     } else {
-      isDark.value = true // 如果没有保存的主题，使用暗色主题
+      // 检查系统主题偏好
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+      isDark.value = prefersDark
     }
     updateTheme()
   }
