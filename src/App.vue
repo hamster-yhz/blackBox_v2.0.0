@@ -31,11 +31,24 @@ watch(isDark, (newValue) => {
   box-sizing: border-box;
 }
 
+/* 修复图片、视频和画布的溢出问题 */
+::view-transition-group(*) {
+  overflow: clip;
+}
+
+img, video, canvas {
+  overflow: clip;
+  max-width: 100%;
+  height: auto;
+}
+
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: var(--bg-primary);
+  color: var(--text-primary);
 }
 
 .app {

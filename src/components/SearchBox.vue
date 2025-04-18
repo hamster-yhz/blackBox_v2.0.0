@@ -222,6 +222,13 @@ onUnmounted(() => {
   color: var(--text-tertiary);
   font-size: 0.8rem;
   pointer-events: none;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.search-container:not(.is-active) .search-shortcut {
+  opacity: 1;
 }
 
 kbd {
@@ -247,6 +254,10 @@ kbd {
 @media (max-width: 768px) {
   .search-shortcut {
     display: none;
+  }
+
+  .search-input {
+    padding-right: 2rem;
   }
 
   .search-results {

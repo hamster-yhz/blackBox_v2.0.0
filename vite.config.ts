@@ -9,5 +9,28 @@ export default defineConfig({
     alias: {
       '@': resolve(__dirname, 'src')
     }
+  },
+  server: {
+    fs: {
+      // 允许访问 content 目录
+      allow: ['..']
+    }
+  },
+  build: {
+    // 将 content 目录复制到 dist
+    assetsDir: 'content',
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html')
+      },
+      output: {
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.name?.endsWith('.md')) {
+            return 'content/articles/[name][extname]'
+          }
+          return 'assets/[name]-[hash][extname]'
+        }
+      }
+    }
   }
 }) 

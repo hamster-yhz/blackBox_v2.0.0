@@ -1,9 +1,11 @@
 <template>
   <header class="navbar" :class="{ 'dark': isDark }">
     <div class="navbar-container">
-      <router-link to="/" class="logo">
-        黑盒博客
-      </router-link>
+      <div class="navbar-left">
+        <router-link to="/" class="logo">
+          黑盒博客
+        </router-link>
+      </div>
 
       <!-- 桌面端导航 -->
       <nav class="desktop-nav">
@@ -20,7 +22,7 @@
         <ThemeToggle />
         
         <!-- 移动端菜单 -->
-        <MobileMenu class="mobile-menu" />
+        <MobileMenu class="mobile-menu-wrapper" />
       </div>
     </div>
   </header>
@@ -39,7 +41,7 @@ const { isDark } = useTheme()
 .navbar {
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 1000;
   background: var(--bg-primary);
   border-bottom: 1px solid var(--border-color);
   padding: 0.5rem 0;
@@ -53,6 +55,11 @@ const { isDark } = useTheme()
   align-items: center;
   justify-content: space-between;
   height: 3rem;
+}
+
+.navbar-left {
+  display: flex;
+  align-items: center;
 }
 
 .logo {
@@ -76,6 +83,7 @@ const { isDark } = useTheme()
   color: var(--text-primary);
   text-decoration: none;
   transition: color 0.2s;
+  font-weight: 500;
 }
 
 .desktop-nav a:hover,
@@ -93,6 +101,13 @@ const { isDark } = useTheme()
   width: 300px;
 }
 
+/* 调整媒体查询断点 */
+@media (max-width: 1024px) {
+  .search-box {
+    width: 200px;
+  }
+}
+
 @media (max-width: 768px) {
   .desktop-nav {
     display: none;
@@ -101,11 +116,34 @@ const { isDark } = useTheme()
   .search-box {
     display: none;
   }
+
+  .mobile-menu-wrapper {
+    display: block;
+  }
 }
 
 @media (min-width: 769px) {
-  .mobile-menu {
+  .mobile-menu-wrapper {
     display: none;
   }
+}
+
+/* 暗色模式样式 */
+.dark .navbar {
+  background: var(--bg-primary);
+  border-bottom-color: var(--border-color);
+}
+
+.dark .logo {
+  color: var(--text-primary);
+}
+
+.dark .desktop-nav a {
+  color: var(--text-primary);
+}
+
+.dark .desktop-nav a:hover,
+.dark .desktop-nav a.router-link-active {
+  color: var(--primary-color);
 }
 </style> 

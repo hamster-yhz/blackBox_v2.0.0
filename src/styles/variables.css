@@ -41,4 +41,11 @@
   --code-block-bg: #1E1E1E;
 
   --blockquote-bg: #2D2D2D;
+}
+
+/* 修复图片、视频和画布的溢出问题 */
+img, video, canvas {
+  overflow: clip;
+  max-width: 100%;
+  height: auto;
 } 
