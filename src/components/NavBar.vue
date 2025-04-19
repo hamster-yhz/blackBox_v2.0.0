@@ -4,7 +4,7 @@
       <div class="navbar-left">
         <router-link to="/" class="logo">
           <img 
-            :src="isDark ? '/public/images/blackbox-black.png' : '/public/images/blackbox-white.png'" 
+            :src="isDark ? '/images/blackbox-black.png' : '/images/blackbox-white.png'" 
             alt="BlackBox Logo" 
             class="logo-image" 
           />
