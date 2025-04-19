@@ -1,7 +1,11 @@
 # BlackBox Blog
 
 <div align="center">
-  <img src="docs/images/blackbox.png" alt="BlackBox Logo" width="200"/>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./images/blackbox-black.png">
+    <source media="(prefers-color-scheme: light)" srcset="./images/blackbox-white.png">
+    <img alt="BlackBox Logo" src="./images/blackbox-black.png" width="128">
+  </picture>
   
   <div style="margin: 10px 0; display: flex; justify-content: center; gap: 10px;">
     <a href="README.md" style="padding: 8px 16px; border-radius: 4px; text-decoration: none; background-color: #f0f0f0; color: #333; display: flex; align-items: center;">
