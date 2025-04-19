@@ -3,6 +3,11 @@
     <div class="navbar-container">
       <div class="navbar-left">
         <router-link to="/" class="logo">
+          <img 
+            :src="isDark ? '/public/images/blackbox-black.png' : '/public/images/blackbox-white.png'" 
+            alt="BlackBox Logo" 
+            class="logo-image" 
+          />
           <span class="brand-text">BlackBox</span>
         </router-link>
       </div>
@@ -80,7 +85,7 @@ const handleLogout = () => {
   background-color: var(--bg-card);
   box-shadow: var(--shadow-sm);
   z-index: 1000;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  transition: background-color 0.3s ease;
 }
 
 .navbar-container {
@@ -90,7 +95,6 @@ const handleLogout = () => {
   padding: 0 1rem;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
 }
 
 .navbar-left {
@@ -99,11 +103,22 @@ const handleLogout = () => {
 }
 
 .logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-right: 2rem;
+}
+
+.logo-image {
+  height: 2rem;
+  width: auto;
+}
+
+.brand-text {
   font-size: 1.25rem;
   font-weight: 600;
   color: var(--text-primary);
-  text-decoration: none;
-  margin-right: 2rem;
+  transition: color 0.3s ease;
 }
 
 .desktop-nav {
