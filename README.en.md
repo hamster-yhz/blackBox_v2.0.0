@@ -4,7 +4,7 @@
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/hamster-yhz/blackBox_v2.0.0/main/public/images/blackbox-black.png">
     <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/hamster-yhz/blackBox_v2.0.0/main/public/images/blackbox-white.png">
-    <img alt="BlackBox Logo" src="https://raw.githubusercontent.com/hamster-yhz/blackBox_v2.0.0/main/public/images/blackbox-black.png" width="128">
+    <img alt="BlackBox Logo" src="https://raw.githubusercontent.com/hamster-yhz/blackBox_v2.0.0/main/public/images/blackbox-black.png" width="256">
   </picture>
   
   <div style="margin: 10px 0; display: flex; justify-content: center; gap: 10px;">
