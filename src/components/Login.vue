@@ -12,7 +12,7 @@
           <div class="mt-3 px-4 py-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
             <p class="text-center text-sm text-indigo-600 dark:text-indigo-400 leading-relaxed">
               <span class="font-medium">温馨提示：</span>登录功能仅供博主本人使用<br>
-              访客无需登录即可浏览文章，<br>如有不便，敬请谅解，敬请谅解
+              访客无需登录即可浏览文章，<br>如有不便，敬请谅解
             </p>
           </div>
         </div>

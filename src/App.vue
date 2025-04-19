@@ -1,5 +1,6 @@
 <template>
   <div :class="{ 'dark': isDark }" class="app-container">
+    <WelcomeDialog />
     <Navbar />
     <main class="main-content">
       <router-view />
@@ -11,6 +12,7 @@
 import { onMounted, watch } from 'vue'
 import Navbar from './components/NavBar.vue'
 import { useTheme } from './composables/useTheme'
+import WelcomeDialog from './components/WelcomeDialog.vue'
 
 const { isDark, initTheme } = useTheme()
 
