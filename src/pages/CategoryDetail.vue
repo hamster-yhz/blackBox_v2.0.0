@@ -157,15 +157,27 @@ function formatDate(dateString: string): string {
 .article-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.75rem;
+  margin: 1.5rem 0;
 }
 
 .tag {
-  background-color: var(--bg-tag);
-  color: var(--text-tag);
+  background: var(--primary-color-light);
+  color: var(--primary-color);
   padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  font-size: 0.85rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  border: 1px solid var(--primary-color);
+}
+
+.tag:hover {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
 }
 
 .loading {
