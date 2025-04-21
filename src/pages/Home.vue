@@ -19,7 +19,7 @@
           />
           <div class="carousel-content">
             <h1 class="hero-title">黑盒</h1>
-            <p class="hero-subtitle">探索技术的奥秘，分享开发的乐趣</p>
+            <p class="hero-subtitle" :class="{ animate: isAnimating }" data-text="探索技术的奥秘，分享开发的乐趣">探索技术的奥秘，分享开发的乐趣</p>
           </div>
         </div>
       </div>
@@ -87,6 +87,7 @@ const currentIndex = ref(0)
 const isLoading = ref(true)
 const loadedImages = ref(new Set<number>())
 let timer: number | null = null
+const isAnimating = ref(false)
 
 const handleImageLoad = (index: number) => {
   loadedImages.value.add(index)
@@ -97,10 +98,19 @@ const handleImageLoad = (index: number) => {
 
 const setActiveImage = (index: number) => {
   currentIndex.value = index
+  triggerAnimation()
 }
 
 const nextImage = () => {
   currentIndex.value = (currentIndex.value + 1) % carouselImages.length
+  triggerAnimation()
+}
+
+const triggerAnimation = () => {
+  isAnimating.value = true
+  setTimeout(() => {
+    isAnimating.value = false
+  }, 1000) // 动画持续1秒
 }
 
 function formatDate(dateString: string): string {
@@ -156,6 +166,8 @@ onUnmounted(() => {
   position: relative;
   width: 100%;
   height: 100%;
+  overflow: hidden;
+  border-radius: inherit;
 }
 
 .loading-overlay {
@@ -193,6 +205,8 @@ onUnmounted(() => {
   height: 100%;
   opacity: 0;
   transition: opacity 0.5s ease-in-out;
+  overflow: hidden;
+  border-radius: inherit;
 }
 
 .carousel-item.active {
@@ -207,6 +221,8 @@ onUnmounted(() => {
   height: 100%;
   object-fit: cover;
   filter: brightness(0.7);
+  overflow: hidden;
+  border-radius: inherit;
 }
 
 .carousel-content {
@@ -225,8 +241,16 @@ onUnmounted(() => {
 .hero-title {
   font-size: clamp(2rem, 5vw, 3rem);
   margin-bottom: 1rem;
-  color: #ffffff;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  color: rgba(255, 255, 255, 0.95);
+  position: relative;
+  text-shadow: 
+    1px 1px 0 rgba(0, 0, 0, 0.3),
+    2px 2px 0 rgba(0, 0, 0, 0.2),
+    3px 3px 0 rgba(0, 0, 0, 0.15),
+    4px 4px 0 rgba(0, 0, 0, 0.1),
+    5px 5px 0 rgba(0, 0, 0, 0.05);
+  transform: perspective(800px) rotateX(3deg) translateZ(20px);
+  transform-style: preserve-3d;
 }
 
 .hero-subtitle {
@@ -234,6 +258,40 @@ onUnmounted(() => {
   color: rgba(255, 255, 255, 0.9);
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
   max-width: 600px;
+  margin: 0;
+  text-align: center;
+  line-height: 1.5;
+  position: relative;
+}
+
+.hero-subtitle::before,
+.hero-subtitle::after {
+  content: attr(data-text);
+  position: absolute;
+  left: 0;
+  width: 100%;
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+  transition: transform 0.5s ease-in-out;
+}
+
+.hero-subtitle::before {
+  clip-path: polygon(0 0, 100% 0, 100% 50%, 0 50%);
+  transform: translateY(0);
+}
+
+.hero-subtitle::after {
+  clip-path: polygon(0 50%, 100% 50%, 100% 100%, 0 100%);
+  transform: translateY(0);
+}
+
+.hero-subtitle.animate::before {
+  transform: translateY(-5px);
+}
+
+.hero-subtitle.animate::after {
+  transform: translateY(5px);
 }
 
 .carousel-dots {
@@ -374,6 +432,15 @@ onUnmounted(() => {
   
   .recommended-article .article-title {
     font-size: 1.125rem;
+  }
+  
+  .hero-subtitle {
+    font-size: 1rem;
+  }
+  
+  .hero-subtitle::before,
+  .hero-subtitle::after {
+    font-size: 1rem;
   }
 }
 

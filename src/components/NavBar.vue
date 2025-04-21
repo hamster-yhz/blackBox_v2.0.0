@@ -3,11 +3,7 @@
     <div class="navbar-container">
       <div class="navbar-left">
         <router-link to="/" class="logo">
-          <img 
-            :src="isDark ? '/images/blackbox-black.png' : '/images/blackbox-white.png'" 
-            alt="BlackBox Logo" 
-            class="logo-image" 
-          />
+          <img src="/logo.svg" alt="BlackBox Logo" class="logo-image" />
           <span class="brand-text">BlackBox</span>
         </router-link>
       </div>
@@ -112,6 +108,8 @@ const handleLogout = () => {
 .logo-image {
   height: 2rem;
   width: auto;
+  color: var(--text-primary);
+  transition: color 0.3s ease;
 }
 
 .brand-text {
@@ -200,5 +198,9 @@ const handleLogout = () => {
 
 .dark .desktop-nav a:hover {
   color: var(--text-hover);
+}
+
+.dark .logo-image {
+  color: var(--text-primary);
 }
 </style> 

@@ -1,44 +1,34 @@
 <template>
-  <div class="container mx-auto px-4 py-8">
-    <div v-if="loading" class="text-center py-8">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-white mx-auto"></div>
+  <div class="category-detail" :class="{ 'dark': isDark }">
+    <div class="category-header">
+      <h1>{{ getCategoryName(categoryId) }}</h1>
+      <p>{{ articles.length }} 篇文章</p>
     </div>
-    <div v-else-if="error" class="text-red-500 text-center py-8">
-      {{ error }}
-    </div>
-    <div v-else>
-      <header class="text-center mb-12">
-        <h1 class="category-detail-title text-4xl font-bold mb-2">{{ getCategoryName(categoryId) }}</h1>
-        <p class="text-gray-500 dark:text-gray-400">{{ articles.length }} 篇文章</p>
-      </header>
 
-      <div class="grid gap-8">
-        <div 
-          v-for="article in articles" 
-          :key="article.id" 
-          class="article-card bg-gray-50 dark:bg-gray-800 rounded-xl shadow-md hover:shadow-lg overflow-hidden border border-gray-100 dark:border-gray-700 transition-all duration-200"
-        >
-          <router-link :to="`/article/${article.id}`" class="block p-6 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors duration-200">
-            <h2 class="article-title text-xl font-semibold mb-2">
-              {{ article.title }}
-            </h2>
-            <div class="text-sm text-gray-500 dark:text-gray-400 mb-4">
-              <span>{{ article.date }}</span>
-              <span class="mx-2">•</span>
-              <span>{{ article.readTime }}</span>
+    <div v-if="loading" class="loading">
+      <div class="loading-spinner"></div>
+    </div>
+
+    <div v-else-if="error" class="error-message">
+      {{ error }}
+      <button @click="fetchArticles" class="retry-button">重试</button>
+    </div>
+
+    <div v-else class="articles-container">
+      <div v-for="article in articles" :key="article.id" class="article-card">
+        <router-link :to="`/article/${article.id}`" class="article-link">
+          <div class="article-content">
+            <h2 class="article-title">{{ article.title }}</h2>
+            <p class="article-summary">{{ article.summary }}</p>
+            <div class="article-meta">
+              <span class="article-date">{{ formatDate(article.date) }}</span>
+              <span class="article-read-time">{{ article.readTime }}</span>
             </div>
-            <p class="text-gray-600 dark:text-gray-300">{{ extractSummary(article.content) }}</p>
-            <div class="mt-4 flex flex-wrap gap-2" v-if="article.tags && article.tags.length > 0">
-              <span 
-                v-for="tag in article.tags" 
-                :key="tag" 
-                class="text-xs px-3 py-1 rounded-full bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-300"
-              >
-                {{ tag }}
-              </span>
+            <div class="article-tags" v-if="article.tags && article.tags.length">
+              <span v-for="tag in article.tags" :key="tag" class="tag">{{ tag }}</span>
             </div>
-          </router-link>
-        </div>
+          </div>
+        </router-link>
       </div>
     </div>
   </div>
@@ -50,12 +40,14 @@ import { useRoute } from 'vue-router'
 import { getArticles } from '../api/articles'
 import type { Article } from '../utils/markdown'
 import { extractSummary } from '../utils/markdown'
+import { useTheme } from '../composables/useTheme'
 
 const route = useRoute()
 const categoryId = computed(() => route.params.id as string)
 const articles = ref<Article[]>([])
 const loading = ref(true)
 const error = ref<string | null>(null)
+const { isDark } = useTheme()
 
 onMounted(async () => {
   try {
@@ -74,6 +66,15 @@ onMounted(async () => {
 // 获取分类的中文名称
 function getCategoryName(id: string): string {
   return id
+}
+
+// 格式化日期
+function formatDate(dateString: string): string {
+  return new Date(dateString).toLocaleDateString('zh-CN', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  })
 }
 </script>
 
@@ -109,7 +110,9 @@ function getCategoryName(id: string): string {
 .article-card {
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
+  border-radius: 12px;
   transition: all 0.2s ease;
+  overflow: hidden;
 }
 
 .article-card:hover {
@@ -118,28 +121,30 @@ function getCategoryName(id: string): string {
   border-color: var(--border-color-hover);
 }
 
-.dark .article-card {
-  background-color: var(--bg-card);
-  border-color: var(--border-color);
-}
-
-.dark .article-card:hover {
-  border-color: var(--border-color-hover);
-}
-
 .article-link {
   text-decoration: none;
+  color: inherit;
+  display: block;
+  padding: 1.5rem;
 }
 
-h2 {
-  color: var(--text-primary);
+.article-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.article-title {
   font-size: 1.5rem;
-  margin-bottom: 1rem;
-  transition: color 0.2s ease;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
 }
 
-h2:hover {
-  color: var(--primary-color);
+.article-summary {
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.6;
 }
 
 .article-meta {
@@ -147,30 +152,61 @@ h2:hover {
   gap: 1rem;
   color: var(--text-tertiary);
   font-size: 0.9rem;
-  margin-bottom: 1rem;
-}
-
-.article-summary {
-  color: var(--text-secondary);
-  line-height: 1.6;
-  margin-bottom: 1.5rem;
 }
 
 .article-tags {
   display: flex;
-  gap: 0.5rem;
   flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .tag {
-  color: var(--text-secondary);
-  text-decoration: none;
-  font-size: 0.9rem;
-  transition: color 0.2s;
+  background-color: var(--bg-tag);
+  color: var(--text-tag);
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.85rem;
 }
 
-.tag:hover {
-  color: var(--primary-color);
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border-color);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.error-message {
+  text-align: center;
+  color: var(--error-color);
+  padding: 2rem;
+}
+
+.retry-button {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.retry-button:hover {
+  background-color: var(--primary-color-hover);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 @media (max-width: 768px) {
@@ -178,31 +214,33 @@ h2:hover {
     padding: 1rem;
   }
 
+  .category-header {
+    margin-bottom: 2rem;
+  }
+
   .category-header h1 {
     font-size: 2rem;
   }
 
   .article-card {
-    padding: 1rem;
-    margin: 0 -1rem;
-    border-radius: 0;
+    border-radius: 8px;
   }
 
-  h2 {
+  .article-link {
+    padding: 1rem;
+  }
+
+  .article-title {
     font-size: 1.25rem;
   }
-}
 
-.category-detail-title {
-  color: var(--text-primary);
-}
+  .article-meta {
+    font-size: 0.8rem;
+  }
 
-.article-title {
-  color: var(--text-primary);
-  transition: color 0.2s ease;
-}
-
-.article-title:hover {
-  color: var(--primary-color);
+  .tag {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.6rem;
+  }
 }
 </style> 

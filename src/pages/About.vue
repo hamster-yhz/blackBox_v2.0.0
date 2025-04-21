@@ -73,8 +73,8 @@
         </div>
       </div>
 
-      <h2>产品说明</h2>
-      <div class="build-info">
+      <h2 @click="toggleContent" class="clickable-title">产品说明</h2>
+      <div v-if="!showNotifications" class="build-info">
         <h2>构建方式</h2>
         <div class="tech-grid">
           <div class="tech-item">
@@ -99,7 +99,7 @@
         </div>
       </div>
 
-      <div class="markdown-support">
+      <div v-if="!showNotifications" class="markdown-support">
         <h2>Markdown 支持</h2>
         <div class="markdown-features">
           <div class="feature-item">
@@ -125,6 +125,45 @@
           </div>
         </div>
       </div>
+
+      <div v-if="showNotifications" class="notifications-container">
+        <div class="notifications-header">
+          <h3>{{ currentLanguage === 'zh' ? '最新公告' : 'Announcements' }}</h3>
+          <button class="lang-switch" @click="toggleLanguage">
+            {{ currentLanguage === 'zh' ? 'EN' : '中' }}
+          </button>
+        </div>
+        <div class="notification-list">
+          <div v-for="(announcement, index) in sortedAnnouncements" :key="index" 
+               class="notification-item" :class="{ 'pinned': announcement.isPinned, 'version': announcement.icon === 'version' }">
+            <div class="notification-icon" :class="[announcement.icon, { 'pinned': announcement.isPinned }]">
+              <!-- 版本更新 -->
+              <span v-if="announcement.icon === 'version'">🔄</span>
+              <!-- 警告/重要通知 -->
+              <span v-else-if="announcement.icon === 'warning'">⚠️</span>
+              <!-- 新功能 -->
+              <span v-else-if="announcement.icon === 'feature'">✨</span>
+              <!-- 维护通知 -->
+              <span v-else-if="announcement.icon === 'maintenance'">🔧</span>
+              <!-- 活动通知 -->
+              <span v-else-if="announcement.icon === 'event'">🎉</span>
+              <!-- 问题修复 -->
+              <span v-else-if="announcement.icon === 'bugfix'">🐛</span>
+              <!-- 安全更新 -->
+              <span v-else-if="announcement.icon === 'security'">🔒</span>
+              <!-- 性能优化 -->
+              <span v-else-if="announcement.icon === 'performance'">⚡</span>
+              <!-- 文档更新 -->
+              <span v-else-if="announcement.icon === 'docs'">📚</span>
+              <!-- 默认圆点 -->
+              <span v-else>•</span>
+            </div>
+            <div class="notification-content">
+              {{ currentLanguage === 'zh' ? announcement.zh : announcement.en }}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="github-link-container">
       <a href="https://github.com/hamster-yhz/blackBox_v2.0.0/" target="_blank" rel="noopener noreferrer" class="github-link">
@@ -136,6 +175,33 @@
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+import { ref, computed } from 'vue'
+import { useTheme } from '../composables/useTheme'
+import { ANNOUNCEMENTS } from '../config/announcement'
+
+const { isDark } = useTheme()
+const showNotifications = ref(false)
+const currentLanguage = ref('zh')
+
+const toggleContent = () => {
+  showNotifications.value = !showNotifications.value
+}
+
+const toggleLanguage = () => {
+  currentLanguage.value = currentLanguage.value === 'zh' ? 'en' : 'zh'
+}
+
+// 对公告进行排序，固定公告始终在最上方
+const sortedAnnouncements = computed(() => {
+  return [...ANNOUNCEMENTS].sort((a, b) => {
+    if (a.isPinned && !b.isPinned) return -1
+    if (!a.isPinned && b.isPinned) return 1
+    return 0
+  })
+})
+</script>
 
 <style scoped>
 .about {
@@ -452,6 +518,195 @@ li::before {
   .github-icon {
     width: 14px;
     height: 14px;
+  }
+}
+
+.clickable-title {
+  cursor: pointer;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  transition: color 0.2s ease;
+}
+
+.clickable-title:hover {
+  color: var(--primary-color);
+}
+
+.notifications-container {
+  background: var(--bg-primary);
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  margin: 0.75rem 0;
+  overflow: hidden;
+  height: 200px;
+}
+
+.notifications-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.notifications-header h3 {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+
+.lang-switch {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 4px 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+}
+
+.lang-switch:hover {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.notification-list {
+  height: calc(100% - 2.5rem);
+  overflow-y: auto;
+  padding: 0.5rem;
+}
+
+.notification-item {
+  display: flex;
+  gap: 0.4rem;
+  padding: 0.4rem;
+  border-bottom: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+}
+
+.notification-item:last-child {
+  border-bottom: none;
+}
+
+.notification-item.pinned:not(.version) {
+  background-color: var(--bg-warning);
+  margin: 0 -0.4rem;
+  padding: 0.4rem;
+  border-radius: 4px;
+}
+
+.notification-icon {
+  width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 10px;
+}
+
+/* 版本更新 - 蓝色 */
+.notification-icon.version {
+  color: var(--primary);
+}
+
+/* 警告/重要通知 - 红色 */
+.notification-icon.warning {
+  color: var(--text-warning);
+}
+
+/* 新功能 - 蓝色 */
+.notification-icon.feature {
+  color: var(--primary);
+}
+
+/* 维护通知 - 灰色 */
+.notification-icon.maintenance {
+  color: var(--text-secondary);
+}
+
+/* 活动通知 - 黄色 */
+.notification-icon.event {
+  color: #FFD700;
+}
+
+/* 问题修复 - 绿色 */
+.notification-icon.bugfix {
+  color: #4CAF50;
+}
+
+/* 安全更新 - 紫色 */
+.notification-icon.security {
+  color: #9C27B0;
+}
+
+/* 性能优化 - 橙色 */
+.notification-icon.performance {
+  color: #FF9800;
+}
+
+/* 文档更新 - 蓝色 */
+.notification-icon.docs {
+  color: var(--primary);
+}
+
+/* 置顶状态下的图标颜色 */
+.notification-icon.pinned:not(.version) {
+  color: var(--text-warning);
+}
+
+.notification-content {
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  line-height: 1.4;
+  white-space: pre-line;
+}
+
+.pinned:not(.version) .notification-content {
+  color: var(--text-warning);
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .notifications-container {
+    height: 180px;
+    margin: 0.5rem 0;
+  }
+
+  .notifications-header {
+    padding: 0.4rem;
+  }
+
+  .notifications-header h3 {
+    font-size: 0.85rem;
+  }
+
+  .notification-list {
+    height: calc(100% - 2.2rem);
+    padding: 0.4rem;
+  }
+
+  .notification-item {
+    padding: 0.35rem;
+    gap: 0.35rem;
+  }
+
+  .notification-icon {
+    width: 12px;
+    height: 12px;
+    font-size: 9px;
+  }
+
+  .notification-content {
+    font-size: 0.8rem;
   }
 }
 </style> 

@@ -10,12 +10,34 @@
       <article class="markdown-body prose dark:prose-invert">
         <h1 class="article-title">{{ article.title }}</h1>
         <div class="article-meta">
-          <span class="article-date">{{ formatDate(article.date) }}</span>
-          <span class="article-category">{{ article.categories[0] }}</span>
-          <span class="article-read-time">{{ article.readTime }}</span>
+          <span class="meta-item">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            {{ formatDate(article.date) }}
+          </span>
+          <span class="meta-item">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+              <line x1="7" y1="7" x2="7.01" y2="7"></line>
+            </svg>
+            {{ article.categories[0] }}
+          </span>
+          <span class="meta-item">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            {{ article.readTime }}
+          </span>
         </div>
         <div class="article-tags" v-if="article.tags && article.tags.length">
-          <span v-for="tag in article.tags" :key="tag" class="tag">{{ tag }}</span>
+          <span v-for="tag in article.tags" :key="tag" class="tag">
+            {{ tag }}
+          </span>
         </div>
         <div ref="contentRef" v-html="content"></div>
       </article>
@@ -379,7 +401,7 @@ onMounted(async () => {
 :root {
   --code-block-bg: #f8f9fc;
   --code-inline-bg: #f3f4f6;
-  --code-text: #1a1a1a;
+  --code-text: #383a42;
   --header-height: 64px;
 }
 
@@ -396,20 +418,20 @@ onMounted(async () => {
   color: inherit !important;
 }
 
-/* Light theme syntax colors - 增强对比度 */
+/* Light theme syntax colors - 增强对比度和美观性 */
 :root {
-  --syntax-comment: #608b4e;
-  --syntax-keyword: #af00db;
-  --syntax-string: #0550ae;
-  --syntax-number: #098658;
-  --syntax-function: #795e26;
-  --syntax-class: #267f99;
-  --syntax-title: #800080;
-  --syntax-params: #1a1a1a;
-  --syntax-variable: #e65100;
-  --syntax-operator: #0033b3;
-  --syntax-property: #660e7a;
-  --syntax-punctuation: #1a1a1a;
+  --syntax-comment: #a0a1a7;          /* 适中的灰色注释 */
+  --syntax-keyword: #a626a4;          /* 紫色关键字 */
+  --syntax-string: #50a14f;           /* 绿色字符串 */
+  --syntax-number: #986801;           /* 金色数字 */
+  --syntax-function: #4078f2;         /* 蓝色函数名 */
+  --syntax-class: #c18401;            /* 橙色类名 */
+  --syntax-title: #4078f2;            /* 蓝色标题 */
+  --syntax-params: #383a42;           /* 深灰色参数 */
+  --syntax-variable: #e45649;         /* 红色变量 */
+  --syntax-operator: #383a42;         /* 深灰色运算符 */
+  --syntax-property: #0184bc;         /* 青色属性 */
+  --syntax-punctuation: #383a42;      /* 深灰色标点 */
 }
 
 /* Dark theme syntax colors */
@@ -429,18 +451,61 @@ onMounted(async () => {
 }
 
 /* 语法高亮规则 */
-.hljs-keyword { color: var(--syntax-keyword) !important; }
-.hljs-string { color: var(--syntax-string) !important; }
-.hljs-number { color: var(--syntax-number) !important; }
-.hljs-function { color: var(--syntax-function) !important; }
-.hljs-class { color: var(--syntax-class) !important; }
-.hljs-title { color: var(--syntax-title) !important; }
-.hljs-params { color: var(--syntax-params) !important; }
-.hljs-variable { color: var(--syntax-variable) !important; }
-.hljs-comment { color: var(--syntax-comment) !important; }
-.hljs-operator { color: var(--syntax-operator) !important; }
-.hljs-property { color: var(--syntax-property) !important; }
-.hljs-punctuation { color: var(--syntax-punctuation) !important; }
+:deep(.hljs-type),
+:deep(.hljs-class),
+:deep(.hljs-title.class_),
+:deep(.hljs-title.function_) {
+  color: var(--syntax-class) !important;
+}
+
+:deep(.hljs-name),
+:deep(.hljs-function),
+:deep(.hljs-title.function_) {
+  color: var(--syntax-function) !important;
+}
+
+:deep(.hljs-keyword),
+:deep(.hljs-selector-tag),
+:deep(.hljs-built_in) {
+  color: var(--syntax-keyword) !important;
+}
+
+:deep(.hljs-string),
+:deep(.hljs-attr),
+:deep(.hljs-string) {
+  color: var(--syntax-string) !important;
+}
+
+:deep(.hljs-number),
+:deep(.hljs-literal) {
+  color: var(--syntax-number) !important;
+}
+
+:deep(.hljs-variable),
+:deep(.hljs-template-variable) {
+  color: var(--syntax-variable) !important;
+}
+
+:deep(.hljs-comment) {
+  color: var(--syntax-comment) !important;
+}
+
+:deep(.hljs-doctag) {
+  color: var(--syntax-keyword) !important;
+}
+
+:deep(.hljs-params) {
+  color: var(--syntax-params) !important;
+}
+
+:deep(.hljs-property) {
+  color: var(--syntax-property) !important;
+}
+
+:deep(.hljs-operator),
+:deep(.hljs-punctuation) {
+  color: var(--syntax-punctuation) !important;
+}
 
 /* 特殊处理一些语言特定的语法 */
 .hljs-attr { color: var(--syntax-property) !important; }
@@ -479,25 +544,60 @@ onMounted(async () => {
 
 .article-meta {
   display: flex;
-  gap: 1rem;
+  gap: 1.5rem;
   color: var(--text-tertiary);
   font-size: 0.9rem;
-  margin-bottom: 1rem;
+  margin: 1rem 0;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-secondary);
+}
+
+.meta-item svg {
+  flex-shrink: 0;
 }
 
 .article-tags {
   display: flex;
-  gap: 0.5rem;
-  margin-bottom: 2rem;
   flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 1.5rem 0;
 }
 
 .tag {
-  background: var(--primary-color-light);
-  color: var(--primary-color);
-  padding: 0.25rem 0.75rem;
-  border-radius: 1rem;
-  font-size: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  color: #3b82f6;
+  background-color: rgba(59, 130, 246, 0.05);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  transition: all 0.2s ease;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.tag:hover {
+  background-color: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.5);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.1);
+}
+
+.dark .tag {
+  color: #60a5fa;
+  background-color: rgba(96, 165, 250, 0.05);
+  border-color: rgba(96, 165, 250, 0.3);
+}
+
+.dark .tag:hover {
+  background-color: rgba(96, 165, 250, 0.1);
+  border-color: rgba(96, 165, 250, 0.5);
 }
 
 .toc-container {
@@ -598,6 +698,20 @@ onMounted(async () => {
 
   .article-title {
     font-size: 2rem !important;
+  }
+
+  .article-meta {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .meta-item {
+    font-size: 0.85rem;
+  }
+
+  .tag {
+    font-size: 0.8rem;
+    padding: 0.35rem 0.7rem;
   }
 }
 
