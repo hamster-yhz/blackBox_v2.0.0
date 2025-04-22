@@ -11,12 +11,26 @@
           class="carousel-item"
           :class="{ active: currentIndex === index }"
         >
-          <img 
-            :src="image" 
-            :alt="`Hero image ${index + 1}`"
-            @load="handleImageLoad(index)"
-            class="carousel-image"
-          />
+          <div class="carousel-image-container">
+            <img 
+              :src="image.src" 
+              :alt="image.alt"
+              @load="handleImageLoad(index)"
+              @error="handleImageError(index)"
+              class="carousel-image"
+              :style="{ 
+                'background-color': image.placeholderColor
+              }"
+            />
+            <img 
+              :src="image.placeholder"
+              :alt="image.alt"
+              class="carousel-placeholder"
+              :style="{ 
+                'background-color': image.placeholderColor
+              }"
+            />
+          </div>
           <div class="carousel-content">
             <h1 class="hero-title">黑盒</h1>
             <p class="hero-subtitle" :class="{ animate: isAnimating }" data-text="探索技术的奥秘，分享开发的乐趣">探索技术的奥秘，分享开发的乐趣</p>
@@ -78,9 +92,24 @@ const { loadRecommendedArticles } = useArticles()
 const recommendedArticles = ref<Article[]>([])
 
 const carouselImages = [
-  '/images/hero-1.jpeg',
-  '/images/hero-2.jpeg',
-  '/images/hero-3.jpeg'
+  {
+    src: '/images/hero-1.webp',
+    placeholder: '/images/hero-1.jpeg',
+    placeholderColor: '#1a1a1a',
+    alt: 'Hero image 1'
+  },
+  {
+    src: '/images/hero-2.webp',
+    placeholder: '/images/hero-2.jpeg',
+    placeholderColor: '#2d2d2d',
+    alt: 'Hero image 2'
+  },
+  {
+    src: '/images/hero-3.webp',
+    placeholder: '/images/hero-3.jpeg',
+    placeholderColor: '#363636',
+    alt: 'Hero image 3'
+  }
 ]
 
 const currentIndex = ref(0)
@@ -89,21 +118,39 @@ const loadedImages = ref(new Set<number>())
 let timer: number | null = null
 const isAnimating = ref(false)
 
+const preloadNextImage = () => {
+  const nextIndex = (currentIndex.value + 1) % carouselImages.length
+  const img = new Image()
+  img.src = carouselImages[nextIndex].src
+}
+
 const handleImageLoad = (index: number) => {
   loadedImages.value.add(index)
   if (loadedImages.value.size === carouselImages.length) {
     isLoading.value = false
+    preloadNextImage()
+  }
+}
+
+const handleImageError = (index: number) => {
+  console.error(`Failed to load image at index ${index}`)
+  // 如果 WebP 加载失败，尝试使用 JPEG
+  const img = document.querySelector(`[data-index="${index}"]`) as HTMLImageElement
+  if (img) {
+    img.src = carouselImages[index].placeholder
   }
 }
 
 const setActiveImage = (index: number) => {
   currentIndex.value = index
   triggerAnimation()
+  preloadNextImage()
 }
 
 const nextImage = () => {
   currentIndex.value = (currentIndex.value + 1) % carouselImages.length
   triggerAnimation()
+  preloadNextImage()
 }
 
 const triggerAnimation = () => {
@@ -127,6 +174,17 @@ function formatDate(dateString: string): string {
 }
 
 onMounted(async () => {
+  // 预加载第一张图片
+  const img = new Image()
+  img.src = carouselImages[0].src
+  img.onerror = (e) => {
+    console.error('Error loading image:', e)
+    isLoading.value = false
+  }
+  img.onload = () => {
+    handleImageLoad(0)
+  }
+  
   timer = window.setInterval(nextImage, 5000)
   
   // 加载推荐文章
@@ -213,7 +271,18 @@ onUnmounted(() => {
   opacity: 1;
 }
 
-.carousel-image {
+.carousel-image-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.carousel-image,
+.carousel-placeholder {
   position: absolute;
   top: 0;
   left: 0;
@@ -221,8 +290,23 @@ onUnmounted(() => {
   height: 100%;
   object-fit: cover;
   filter: brightness(0.7);
-  overflow: hidden;
-  border-radius: inherit;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.carousel-placeholder {
+  opacity: 1;
+}
+
+.carousel-image {
+  opacity: 0;
+}
+
+.carousel-image.loaded {
+  opacity: 1;
+}
+
+.carousel-placeholder.hidden {
+  opacity: 0;
 }
 
 .carousel-content {

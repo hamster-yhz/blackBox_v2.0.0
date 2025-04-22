@@ -1,11 +1,13 @@
 # BlackBox Blog
 
+<div align="right" style="margin-bottom: 20px;">
+  <a href="README.md" style="padding: 8px 16px; border-radius: 4px; text-decoration: none; background-color: #f0f0f0; color: #333; display: inline-flex; align-items: center;">
+    <span style="margin-right: 5px;">🌐</span> 中文
+  </a>
+</div>
+
 <div align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/hamster-yhz/blackBox_v2.0.0/main/public/images/blackbox-black.png">
-    <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/hamster-yhz/blackBox_v2.0.0/main/public/images/blackbox-white.png">
-    <img alt="BlackBox Logo" src="https://raw.githubusercontent.com/hamster-yhz/blackBox_v2.0.0/main/public/images/blackbox-black.png" width="256">
-  </picture>
+  <img src="public/logo.svg" alt="BlackBox Logo" width="128">
   
   <div style="margin: 10px 0; display: flex; justify-content: center; gap: 10px;">
     <a href="README.md" style="padding: 8px 16px; border-radius: 4px; text-decoration: none; background-color: #f0f0f0; color: #333; display: flex; align-items: center;">
@@ -13,6 +15,33 @@
     </a>
     <a href="https://github.com/hamster-yhz/blackBox_v2.0.0" target="_blank" style="display: flex; align-items: center;">
       <img src="https://img.shields.io/github/stars/hamster-yhz/blackBox_v2.0.0?style=social" alt="GitHub Stars">
+    </a>
+  </div>
+
+  <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 15px 0;">
+    <a href="https://github.com/hamster-yhz/blackBox_v2.0.0/blob/main/LICENSE">
+      <img src="https://img.shields.io/badge/license-AGPL%20v3.0-blue.svg" alt="License">
+    </a>
+    <a href="https://github.com/hamster-yhz/blackBox_v2.0.0">
+      <img src="https://img.shields.io/github/repo-size/hamster-yhz/blackBox_v2.0.0" alt="Repo Size">
+    </a>
+    <a href="https://github.com/hamster-yhz/blackBox_v2.0.0/commits/main">
+      <img src="https://img.shields.io/github/last-commit/hamster-yhz/blackBox_v2.0.0" alt="Last Commit">
+    </a>
+    <a href="https://github.com/hamster-yhz/blackBox_v2.0.0/issues">
+      <img src="https://img.shields.io/github/issues/hamster-yhz/blackBox_v2.0.0" alt="Issues">
+    </a>
+    <a href="https://github.com/hamster-yhz/blackBox_v2.0.0/pulls">
+      <img src="https://img.shields.io/github/issues-pr/hamster-yhz/blackBox_v2.0.0" alt="Pull Requests">
+    </a>
+    <a href="https://github.com/hamster-yhz/blackBox_v2.0.0/network/members">
+      <img src="https://img.shields.io/github/forks/hamster-yhz/blackBox_v2.0.0" alt="Forks">
+    </a>
+    <a href="https://github.com/hamster-yhz/blackBox_v2.0.0/watchers">
+      <img src="https://img.shields.io/github/watchers/hamster-yhz/blackBox_v2.0.0" alt="Watchers">
+    </a>
+    <a href="https://github.com/hamster-yhz/blackBox_v2.0.0/stargazers">
+      <img src="https://img.shields.io/github/stars/hamster-yhz/blackBox_v2.0.0" alt="Stars">
     </a>
   </div>
 </div>
