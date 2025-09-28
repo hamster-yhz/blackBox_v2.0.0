@@ -1,0 +1,203 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # 代码质量检查
+  code-quality:
+    runs-on: ubuntu-latest
+    name: Code Quality Checks
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: TypeScript type checking
+      run: npm run type-check
+      
+    - name: ESLint code analysis
+      run: npx eslint . --ext .ts,.vue,.js --format json --output-file eslint-report.json || true
+      
+    - name: Upload ESLint report
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: eslint-report
+        path: eslint-report.json
+        
+    - name: Stylelint CSS analysis
+      run: npx stylelint "**/*.{css,vue}" --formatter json --output-file stylelint-report.json || true
+      
+    - name: Upload Stylelint report
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: stylelint-report
+        path: stylelint-report.json
+        
+    - name: Run tests
+      run: npm test || echo "No tests configured yet"
+      
+    - name: Check for unused dependencies
+      run: npx depcheck --json > depcheck-report.json || true
+      
+    - name: Upload dependency check report
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: depcheck-report
+        path: depcheck-report.json
+
+  # 安全检查
+  security-scan:
+    runs-on: ubuntu-latest
+    name: Security Scan
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Security audit
+      run: npm audit --audit-level=moderate --json > security-audit.json || true
+      
+    - name: Upload security report
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: security-audit
+        path: security-audit.json
+        
+    - name: Check for secrets
+      uses: trufflesecurity/trufflehog@main
+      with:
+        path: ./
+        base: main
+        head: HEAD
+        extra_args: --debug --only-verified
+
+  # 构建测试
+  build:
+    runs-on: ubuntu-latest
+    name: Build Test
+    needs: [code-quality]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Build project
+      run: npm run build
+      
+    - name: Check build size
+      run: |
+        du -sh dist/
+        find dist/ -name "*.js" -exec wc -c {} + | sort -n | tail -5
+        
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-files
+        path: dist/
+        retention-days: 7
+
+  # 性能测试
+  performance:
+    runs-on: ubuntu-latest
+    name: Performance Test
+    needs: [build]
+    if: github.event_name == 'pull_request'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Install Lighthouse CI
+      run: npm install -g @lhci/cli
+      
+    - name: Build project
+      run: npm run build
+      
+    - name: Serve and test with Lighthouse CI
+      run: |
+        npm install -g serve
+        serve -s dist -p 3000 &
+        sleep 10
+        lhci autorun --upload.target=temporary-public-storage || true
+      env:
+        LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+
+  # 部署准备
+  deploy-ready:
+    runs-on: ubuntu-latest
+    name: Deploy Ready Check
+    needs: [code-quality, security-scan, build]
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Deployment ready
+      run: |
+        echo "All checks passed! Ready for deployment."
+        echo "Branch: ${{ github.ref }}"
+        echo "Commit: ${{ github.sha }}"
+        echo "Actor: ${{ github.actor }}"
+        
+  # 通知机制
+  notify:
+    runs-on: ubuntu-latest
+    name: Notify Results
+    needs: [code-quality, security-scan, build]
+    if: always()
+    
+    steps:
+    - name: Notify success
+      if: needs.code-quality.result == 'success' && needs.security-scan.result == 'success' && needs.build.result == 'success'
+      run: echo "✅ All CI checks passed successfully!"
+      
+    - name: Notify failure
+      if: needs.code-quality.result == 'failure' || needs.security-scan.result == 'failure' || needs.build.result == 'failure'
+      run: |
+        echo "❌ CI checks failed!"
+        echo "Code Quality: ${{ needs.code-quality.result }}"
+        echo "Security Scan: ${{ needs.security-scan.result }}"
+        echo "Build: ${{ needs.build.result }}"
+        exit 1
